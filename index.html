@@ -1,0 +1,2045 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="interface.css">
+    <title>
+        Fractal Curves Online App
+    </title>
+    <link rel="shortcut icon" href="icon.svg" type="image/x-icon">
+</head>
+
+<body bgcolor="#bdb6b0" text="#000000" link="#003366" alink="#003366" vlink="#003366">
+    <canvas id="Canvas" width="900" height="700">
+        This text is displayed if your browser does not support HTML5 Canvas.
+    </canvas>
+
+    <script type="text/javascript">
+        const ZERO = 0.0;
+        const ONE_HALF = 0.5;
+        const ONE = 1.0;
+        const PI2 = Math['PI'] * 2.0;
+        const PI_OVER_180 = Math['PI'] / 180.0;
+        const ROOT_3 = Math['sqrt'](3);
+        const MILLISECONDS_PER_SECOND = 1000;
+        const GAUSSIAN_DOMAIN = 0;
+        const EISENSTEIN_DOMAIN = 1;
+
+        function ComplexInteger() {
+            'use strict';
+            let domain = GAUSSIAN_DOMAIN;
+            let a = ZERO;
+            let b = ZERO;
+            this['assertComplexInteger'] = function () {
+                if (domain === GAUSSIAN_DOMAIN) {
+                    let coord_x = Math['round'](a);
+                    let coord_y = Math['round'](b);
+                    if ((a != coord_x) || (b != coord_y)) {
+                        alert('WARNING: non-integer: (' + a + ', ' + b + ')')
+                    }
+                } else { }
+            };
+            this['assertRationalInteger'] = function (value) {
+                if (domain === GAUSSIAN_DOMAIN) {
+                    let rounded = Math['round'](value);
+                    if (value != rounded) {
+                        alert('Oops... not a rational integer: (' + value + ')')
+                    }
+                } else { }
+            };
+            this['initialize'] = function (_0x2fdfx12, _0x2fdfx13, _0x2fdfx14) {
+                this['assertRationalInteger'](_0x2fdfx13);
+                this['assertRationalInteger'](_0x2fdfx14);
+                domain = _0x2fdfx12;
+                a = _0x2fdfx13;
+                b = _0x2fdfx14;
+                if (domain === EISENSTEIN_DOMAIN) {
+                    a = _0x2fdfx13 - _0x2fdfx14 / 2;
+                    b = _0x2fdfx14 * Math['sqrt'](3) / 2
+                };
+                this['assertComplexInteger']()
+            };
+            this['setDomain'] = function (_0x2fdfx15) {
+                domain = _0x2fdfx15
+            };
+            this['setReal'] = function (_0x2fdfx13) {
+                a = _0x2fdfx13;
+                this['assertComplexInteger']()
+            };
+            this['setImaginary'] = function (_0x2fdfx14) {
+                b = _0x2fdfx14;
+                this['assertComplexInteger']()
+            };
+            this['add'] = function (_0x2fdfx16) {
+                if (_0x2fdfx16['getDomain']() != domain) {
+                    console['log'](
+                        'conflicting domains in add method of ComplexInteger.js'
+                    );
+                    alert('conflicting domains in add method of ComplexInteger.js')
+                };
+                this['assertRationalInteger'](_0x2fdfx16['getReal']());
+                this['assertRationalInteger'](_0x2fdfx16['getImaginary']());
+                a += _0x2fdfx16['getReal']();
+                b += _0x2fdfx16['getImaginary']();
+                this['assertComplexInteger']()
+            };
+            this['conjugate'] = function () {
+                b = -b;
+                this['assertComplexInteger']()
+            };
+            this['getReal'] = function () {
+                return a
+            };
+            this['getImaginary'] = function () {
+                return b
+            };
+            this['getDomain'] = function () {
+                return domain
+            };
+            this['getNorm'] = function () {
+                let _0x2fdfx17 = a * a + b * b;
+                this['assertRationalInteger'](_0x2fdfx17);
+                return _0x2fdfx17
+            };
+            this['copyFrom'] = function (_0x2fdfx18) {
+                domain = _0x2fdfx18['getDomain']();
+                a = _0x2fdfx18['getReal']();
+                b = _0x2fdfx18['getImaginary']();
+                this['assertComplexInteger']()
+            };
+            this['multiply'] = function (_0x2fdfx19) {
+                if (_0x2fdfx19['getDomain']() != domain) {
+                    console['log'](
+                        'conflicting domains in multiply method of ComplexInteger.js'
+                    );
+                    alert(
+                        'conflicting domains in multiply method of ComplexInteger.js')
+                };
+                this['assertRationalInteger'](_0x2fdfx19['getReal']());
+                this['assertRationalInteger'](_0x2fdfx19['getImaginary']());
+                let _0x2fdfx13 = a;
+                let _0x2fdfx14 = b;
+                a = (_0x2fdfx13 * _0x2fdfx19['getReal']()) - (_0x2fdfx14 *
+                    _0x2fdfx19['getImaginary']());
+                b = (_0x2fdfx13 * _0x2fdfx19['getImaginary']()) + (
+                    _0x2fdfx14 * _0x2fdfx19['getReal']());
+                this['assertComplexInteger']()
+            }
+        }
+
+        function Transform() {
+            'use strict';
+            let _0x2fdfx1b = 0;
+            let _0x2fdfx1c = 0;
+            this['assertValue'] = function (_0x2fdfx13) {
+                let _0x2fdfx1d = false;
+                if (_0x2fdfx13 === 0) {
+                    _0x2fdfx1d = true
+                };
+                if (_0x2fdfx13 === 1) {
+                    _0x2fdfx1d = true
+                };
+                if (!_0x2fdfx1d) {
+                    alert('transform component (' + _0x2fdfx13 +
+                        ') set to non-zero or non-one value')
+                }
+            };
+            this['setComponents'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx1b = _0x2fdfx1e;
+                _0x2fdfx1c = _0x2fdfx1f;
+                this['assertValue'](_0x2fdfx1b);
+                this['assertValue'](_0x2fdfx1c)
+            };
+            this['setRotation'] = function (_0x2fdfx13) {
+                _0x2fdfx1b = _0x2fdfx13;
+                this['assertValue'](_0x2fdfx13)
+            };
+            this['setReflection'] = function (_0x2fdfx13) {
+                _0x2fdfx1c = _0x2fdfx13;
+                this['assertValue'](_0x2fdfx1c)
+            };
+            this['getRotation'] = function () {
+                return _0x2fdfx1b
+            };
+            this['getReflection'] = function () {
+                return _0x2fdfx1c
+            };
+            this['copyFrom'] = function (_0x2fdfx18) {
+                _0x2fdfx1b = _0x2fdfx18['getRotation']();
+                _0x2fdfx1c = _0x2fdfx18['getReflection']();
+                this['assertValue'](_0x2fdfx1b);
+                this['assertValue'](_0x2fdfx1c)
+            }
+        }
+
+        function Lattice() {
+            'use strict';
+            const _0x2fdfx21 = 'rgb( 200, 220, 230 )';
+            const _0x2fdfx22 = 'rgb(   0,   0,   0 )';
+            let _0x2fdfxb = 0;
+            let _0x2fdfx23 = 10;
+            let _0x2fdfx24 = ZERO;
+            let _0x2fdfx25 = ZERO;
+            this['setDomain'] = function (_0x2fdfx15) {
+                _0x2fdfxb = _0x2fdfx15
+            };
+            this['setResolution'] = function (_0x2fdfx13) {
+                _0x2fdfx23 = _0x2fdfx13 / 2
+            };
+            this['setFamilyIntegerXY'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx24 = _0x2fdfx1e;
+                _0x2fdfx25 = _0x2fdfx1f
+            };
+            this['render'] = function (_0x2fdfx26, _0x2fdfx27, _0x2fdfx28) {
+                canvas['lineWidth'] = 1;
+                canvas['strokeStyle'] = _0x2fdfx21;
+                if (_0x2fdfxb === GAUSSIAN_DOMAIN) {
+                    for (let _0x2fdfx29 = -_0x2fdfx23; _0x2fdfx29 <=
+                        _0x2fdfx23; _0x2fdfx29++) {
+                        let _0x2fdfx2a = _0x2fdfx27 + _0x2fdfx29 * _0x2fdfx28;
+                        let _0x2fdfx2b = _0x2fdfx27 + _0x2fdfx29 * _0x2fdfx28;
+                        let _0x2fdfx2c = _0x2fdfx26 - _0x2fdfx23 * _0x2fdfx28;
+                        let _0x2fdfx2d = _0x2fdfx26 + _0x2fdfx23 * _0x2fdfx28;
+                        canvas['beginPath']();
+                        canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                        canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                        canvas['stroke']();
+                        canvas['closePath']()
+                    };
+                    for (let _0x2fdfx29 = -_0x2fdfx23; _0x2fdfx29 <=
+                        _0x2fdfx23; _0x2fdfx29++) {
+                        let _0x2fdfx2a = _0x2fdfx27 - _0x2fdfx23 * _0x2fdfx28;
+                        let _0x2fdfx2b = _0x2fdfx27 + _0x2fdfx23 * _0x2fdfx28;
+                        let _0x2fdfx2c = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28;
+                        let _0x2fdfx2d = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28;
+                        canvas['beginPath']();
+                        canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                        canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                        canvas['stroke']();
+                        canvas['closePath']()
+                    }
+                } else {
+                    let _0x2fdfx2e = _0x2fdfx28 * (Math['sqrt'](3) / 2);
+                    let _0x2fdfx2f = _0x2fdfx23 * _0x2fdfx28 * ONE_HALF;
+                    let _0x2fdfx30 = _0x2fdfx23 * _0x2fdfx2e;
+                    for (var _0x2fdfx29 = -_0x2fdfx23; _0x2fdfx29 <=
+                        _0x2fdfx23; _0x2fdfx29++) {
+                        var _0x2fdfx2a = _0x2fdfx27 + _0x2fdfx29 * _0x2fdfx2e;
+                        var _0x2fdfx2b = _0x2fdfx27 + _0x2fdfx29 * _0x2fdfx2e;
+                        var _0x2fdfx2c = _0x2fdfx26 - _0x2fdfx30;
+                        var _0x2fdfx2d = _0x2fdfx26 + _0x2fdfx30;
+                        canvas['beginPath']();
+                        canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                        canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                        canvas['stroke']();
+                        canvas['closePath']()
+                    };
+                    for (var _0x2fdfx29 = -_0x2fdfx23; _0x2fdfx29 <=
+                        _0x2fdfx23; _0x2fdfx29++) {
+                        var _0x2fdfx2a = _0x2fdfx27 - _0x2fdfx30;
+                        var _0x2fdfx2b = _0x2fdfx27 + _0x2fdfx30;
+                        var _0x2fdfx2c = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28 -
+                            _0x2fdfx2f;
+                        var _0x2fdfx2d = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28 +
+                            _0x2fdfx2f;
+                        canvas['beginPath']();
+                        canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                        canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                        canvas['stroke']();
+                        canvas['closePath']()
+                    };
+                    for (var _0x2fdfx29 = -_0x2fdfx23; _0x2fdfx29 <=
+                        _0x2fdfx23; _0x2fdfx29++) {
+                        var _0x2fdfx2a = _0x2fdfx27 - _0x2fdfx30;
+                        var _0x2fdfx2b = _0x2fdfx27 + _0x2fdfx30;
+                        var _0x2fdfx2c = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28 +
+                            _0x2fdfx2f;
+                        var _0x2fdfx2d = _0x2fdfx26 + _0x2fdfx29 * _0x2fdfx28 -
+                            _0x2fdfx2f;
+                        canvas['beginPath']();
+                        canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                        canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                        canvas['stroke']();
+                        canvas['closePath']()
+                    }
+                };
+                canvas['lineWidth'] = 7;
+                canvas['beginPath']();
+                canvas['moveTo'](_0x2fdfx26, _0x2fdfx27);
+                canvas['lineTo'](_0x2fdfx26 + _0x2fdfx24 * _0x2fdfx28, _0x2fdfx27 -
+                    _0x2fdfx25 * _0x2fdfx28);
+                canvas['stroke']();
+                canvas['closePath']();
+                canvas['fillStyle'] = _0x2fdfx22;
+                canvas['beginPath']();
+                canvas['arc'](_0x2fdfx26, _0x2fdfx27, 3, 0, Math['PI'] * 2, true);
+                canvas['closePath']();
+                canvas['fill']()
+            }
+        }
+        const MAX_GENERATOR_INTEGERS = 30;
+
+        function Generator() {
+            'use strict';
+            const _0x2fdfx33 = 'rgb( 255, 255, 255 )';
+            const _0x2fdfx34 = 'rgb( 0, 0, 0 )';
+            const _0x2fdfx22 = 'rgb( 180, 180, 180 )';
+            const _0x2fdfx35 = 1.25;
+            let _0x2fdfxb = GAUSSIAN_DOMAIN;
+            let _0x2fdfx36 = new ComplexInteger();
+            let _0x2fdfx37 = new ComplexInteger();
+            let _0x2fdfx38 = 0;
+            let _0x2fdfx39 = 0;
+            let _0x2fdfx3a = 'no name';
+            let _0x2fdfx3b = new Array(MAX_GENERATOR_INTEGERS);
+            let _0x2fdfx3c = new Array(MAX_GENERATOR_INTEGERS);
+            let _0x2fdfx3d = new Array(MAX_GENERATOR_INTEGERS);
+            let _0x2fdfx26 = ZERO;
+            let _0x2fdfx27 = ZERO;
+            let _0x2fdfx3e = ZERO;
+            let _0x2fdfx3f = ZERO;
+            for (let _0x2fdfx14 = 0; _0x2fdfx14 <
+                MAX_GENERATOR_INTEGERS; _0x2fdfx14++) {
+                _0x2fdfx3b[_0x2fdfx14] = new ComplexInteger();
+                _0x2fdfx3c[_0x2fdfx14] = new ComplexInteger();
+                _0x2fdfx3d[_0x2fdfx14] = new Transform()
+            };
+            this['setName'] = function (_0x2fdfx40) {
+                _0x2fdfx3a = _0x2fdfx40
+            };
+            this['loadGenes'] = function (genes) {
+                let _0x2fdfx42 = false;
+                let _0x2fdfx43 = 0;
+                let _0x2fdfx44 = 0;
+                let _0x2fdfx45 = 0;
+                let _0x2fdfx46 = 0;
+                let _0x2fdfx47 = 0;
+                let _0x2fdfx48 = 0;
+                let _0x2fdfx49 = 0;
+                _0x2fdfx39 = 0;
+                for (let _0x2fdfx4a = 0; _0x2fdfx4a < genes[
+                    'length']; _0x2fdfx4a++) {
+                    let _0x2fdfx4b = genes['charAt'](_0x2fdfx4a);
+                    if (_0x2fdfx4a === 0) {
+                        if (_0x2fdfx4b === 'G') {
+                            _0x2fdfxb = GAUSSIAN_DOMAIN
+                        };
+                        if (_0x2fdfx4b === 'E') {
+                            _0x2fdfxb = EISENSTEIN_DOMAIN
+                        }
+                    } else {
+                        if ((_0x2fdfx4b === ',') || (_0x2fdfx4b === ' ')) { } else {
+                            if (_0x2fdfx4b === '-') {
+                                _0x2fdfx42 = true
+                            } else {
+                                let _0x2fdfx4c = parseInt(_0x2fdfx4b);
+                                if (_0x2fdfx42) {
+                                    _0x2fdfx4c = -_0x2fdfx4c;
+                                    _0x2fdfx42 = false
+                                };
+                                _0x2fdfx43++;
+                                if (_0x2fdfx43 === 1) {
+                                    _0x2fdfx44 = _0x2fdfx4c
+                                };
+                                if (_0x2fdfx43 === 2) {
+                                    _0x2fdfx45 = _0x2fdfx4c
+                                };
+                                if (_0x2fdfx43 === 3) {
+                                    _0x2fdfx46 = _0x2fdfx4c
+                                };
+                                if (_0x2fdfx43 === 4) {
+                                    _0x2fdfx47 = _0x2fdfx4c
+                                };
+                                if (_0x2fdfx43 === 4) {
+                                    _0x2fdfx3b[_0x2fdfx39]['setReal'](_0x2fdfx44);
+                                    _0x2fdfx3b[_0x2fdfx39]['setImaginary'](
+                                        _0x2fdfx45);
+                                    _0x2fdfx48 += _0x2fdfx44;
+                                    _0x2fdfx49 += _0x2fdfx45;
+                                    _0x2fdfx3c[_0x2fdfx39]['initialize'](_0x2fdfxb,
+                                        _0x2fdfx44, _0x2fdfx45);
+                                    _0x2fdfx3d[_0x2fdfx39]['setComponents'](
+                                        _0x2fdfx46, _0x2fdfx47);
+                                    _0x2fdfx43 = 0;
+                                    _0x2fdfx39++
+                                }
+                            }
+                        }
+                    }
+                };
+                _0x2fdfx37['setReal'](_0x2fdfx48);
+                _0x2fdfx37['setImaginary'](_0x2fdfx49);
+                _0x2fdfx61()
+            };
+            this['copyFrom'] = function (g) {
+                _0x2fdfx36['copyFrom'](g['getFamilyInteger']());
+                _0x2fdfxb = g['getDomain']();
+                _0x2fdfx38 = g['getFamilyNorm']();
+                _0x2fdfx39 = g['getNumIntegers']();
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 <
+                    MAX_GENERATOR_INTEGERS; _0x2fdfx14++) {
+                    _0x2fdfx3c[_0x2fdfx14]['copyFrom'](g['getInteger'](_0x2fdfx14));
+                    _0x2fdfx3d[_0x2fdfx14]['copyFrom'](g['getTransform'](
+                        _0x2fdfx14))
+                }
+            };
+            this['getFamilyNorm'] = function () {
+                return _0x2fdfx38
+            };
+            this['getNumIntegers'] = function () {
+                return _0x2fdfx39
+            };
+            this['getDomain'] = function () {
+                return _0x2fdfxb
+            };
+            this['getName'] = function () {
+                return _0x2fdfx3a
+            };
+            this['getFamilyInteger'] = function () {
+                let _0x2fdfx4e = new ComplexInteger();
+                _0x2fdfx4e['copyFrom'](_0x2fdfx36);
+                return _0x2fdfx4e
+            };
+            this['getFamilyIntComponents'] = function () {
+                let _0x2fdfx4e = new ComplexInteger();
+                _0x2fdfx4e['copyFrom'](_0x2fdfx37);
+                return _0x2fdfx4e
+            };
+            this['getInteger'] = function (_0x2fdfx4f) {
+                let _0x2fdfx4e = new ComplexInteger();
+                _0x2fdfx4e['copyFrom'](_0x2fdfx3c[_0x2fdfx4f]);
+                return _0x2fdfx4e
+            };
+            this['getIntComponent'] = function (_0x2fdfx4f) {
+                let _0x2fdfx4e = new ComplexInteger();
+                _0x2fdfx4e['copyFrom'](_0x2fdfx3b[_0x2fdfx4f]);
+                return _0x2fdfx4e
+            };
+            this['getTransform'] = function (_0x2fdfx4f) {
+                let _0x2fdfx4e = new Transform();
+                _0x2fdfx4e['setRotation'](_0x2fdfx3d[_0x2fdfx4f]['getRotation']());
+                _0x2fdfx4e['setReflection'](_0x2fdfx3d[_0x2fdfx4f]['getReflection']
+                    ());
+                return _0x2fdfx4e
+            };
+            this['render'] = function (_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28) {
+                let _0x2fdfx50 = _0x2fdfx28;
+                let _0x2fdfx51 = _0x2fdfx28 / _0x2fdfx35;
+                let _0x2fdfx52 = _0x2fdfx50 * ONE_HALF;
+                let _0x2fdfx53 = _0x2fdfx51 * ONE_HALF;
+                canvas['lineWidth'] = 1;
+                canvas['fillStyle'] = _0x2fdfx33;
+                canvas['fillRect'](_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx50, _0x2fdfx51);
+                canvas['strokeStyle'] = _0x2fdfx34;
+                canvas['strokeRect'](_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx50,
+                    _0x2fdfx51);
+                let _0x2fdfx54 = _0x2fdfx1e + _0x2fdfx52;
+                let _0x2fdfx55 = _0x2fdfx1f + _0x2fdfx53;
+                let _0x2fdfx56 = _0x2fdfx28 * 0.6;
+                let _0x2fdfx57 = _0x2fdfx3e * ONE_HALF;
+                let _0x2fdfx58 = _0x2fdfx3f * ONE_HALF;
+                let _0x2fdfx59 = _0x2fdfx54 - _0x2fdfx26 / _0x2fdfx3e * _0x2fdfx56;
+                let _0x2fdfx5a = _0x2fdfx55 + _0x2fdfx27 / _0x2fdfx3e * _0x2fdfx56;
+                let _0x2fdfx5b = _0x2fdfx59;
+                let _0x2fdfx5c = _0x2fdfx5a;
+                canvas['fillStyle'] = _0x2fdfx22;
+                canvas['beginPath']();
+                canvas['arc'](_0x2fdfx59, _0x2fdfx5a, _0x2fdfx28 * 0.03, 0, Math[
+                    'PI'] * 2, true);
+                canvas['closePath']();
+                canvas['fill']();
+                for (let g = 0; g < _0x2fdfx39; g++) {
+                    let _0x2fdfx5d = _0x2fdfx3c[g]['getReal']() / _0x2fdfx3e;
+                    let _0x2fdfx5e = _0x2fdfx3c[g]['getImaginary']() / _0x2fdfx3e;
+                    let _0x2fdfx5b = _0x2fdfx59 + _0x2fdfx5d * _0x2fdfx56;
+                    let _0x2fdfx5c = _0x2fdfx5a - _0x2fdfx5e * _0x2fdfx56;
+                    let _0x2fdfx5f = _0x2fdfx59 + _0x2fdfx5d * _0x2fdfx56 * 0.95;
+                    let _0x2fdfx60 = _0x2fdfx5a - _0x2fdfx5e * _0x2fdfx56 * 0.95;
+                    _0x2fdfx67(_0x2fdfx59, _0x2fdfx5a, _0x2fdfx5f, _0x2fdfx60,
+                        _0x2fdfx56 * 0.15, _0x2fdfx56 * 0.07, _0x2fdfx3d[g]);
+                    _0x2fdfx59 = _0x2fdfx5b;
+                    _0x2fdfx5a = _0x2fdfx5c
+                };
+                canvas['fillStyle'] = _0x2fdfx22;
+                canvas['beginPath']();
+                canvas['arc'](_0x2fdfx59, _0x2fdfx5a, _0x2fdfx28 * 0.02, 0, Math[
+                    'PI'] * 2, true);
+                canvas['closePath']();
+                canvas['fill']()
+            };
+
+            function _0x2fdfx61() {
+                _0x2fdfx36['initialize'](_0x2fdfxb, 0, 0);
+                let _0x2fdfx62 = _0x2fdfx36['getReal']();
+                let _0x2fdfx63 = _0x2fdfx36['getReal']();
+                let _0x2fdfx64 = _0x2fdfx36['getImaginary']();
+                let _0x2fdfx65 = _0x2fdfx36['getImaginary']();
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfx39; _0x2fdfx14++) {
+                    _0x2fdfx36['add'](_0x2fdfx3c[_0x2fdfx14]);
+                    let _0x2fdfx44 = _0x2fdfx36['getReal']();
+                    let _0x2fdfx66 = _0x2fdfx36['getImaginary']();
+                    if (_0x2fdfx44 < _0x2fdfx62) {
+                        _0x2fdfx62 = _0x2fdfx44
+                    };
+                    if (_0x2fdfx44 > _0x2fdfx63) {
+                        _0x2fdfx63 = _0x2fdfx44
+                    };
+                    if (_0x2fdfx66 < _0x2fdfx64) {
+                        _0x2fdfx64 = _0x2fdfx66
+                    };
+                    if (_0x2fdfx66 > _0x2fdfx65) {
+                        _0x2fdfx65 = _0x2fdfx66
+                    }
+                };
+                _0x2fdfx38 = _0x2fdfx36['getNorm']();
+                _0x2fdfx3e = _0x2fdfx63 - _0x2fdfx62;
+                _0x2fdfx3f = _0x2fdfx65 - _0x2fdfx64;
+                _0x2fdfx26 = _0x2fdfx62 + _0x2fdfx3e * ONE_HALF;
+                _0x2fdfx27 = _0x2fdfx64 + _0x2fdfx3f * ONE_HALF
+            }
+
+            function _0x2fdfx67(_0x2fdfx2c, _0x2fdfx2a, _0x2fdfx2d, _0x2fdfx2b,
+                _0x2fdfx68, _0x2fdfx69, _0x2fdfx6a) {
+                canvas['fillStyle'] = _0x2fdfx34;
+                canvas['beginPath']();
+                canvas['moveTo'](_0x2fdfx2c, _0x2fdfx2a);
+                canvas['lineTo'](_0x2fdfx2d, _0x2fdfx2b);
+                canvas['stroke']();
+                canvas['closePath']();
+                let _0x2fdfx6b = _0x2fdfx2d - _0x2fdfx2c;
+                let _0x2fdfx6c = _0x2fdfx2b - _0x2fdfx2a;
+                let _0x2fdfx6d = Math['sqrt'](_0x2fdfx6b * _0x2fdfx6b + _0x2fdfx6c *
+                    _0x2fdfx6c);
+                if (_0x2fdfx6d > ZERO) {
+                    let _0x2fdfx6e = _0x2fdfx6b / _0x2fdfx6d;
+                    let _0x2fdfx6f = _0x2fdfx6c / _0x2fdfx6d;
+                    let _0x2fdfx70 = _0x2fdfx6e * _0x2fdfx68;
+                    let _0x2fdfx71 = _0x2fdfx6f * _0x2fdfx68;
+                    let _0x2fdfx72 = 0.7;
+                    if (_0x2fdfx6a['getReflection']() === 1) {
+                        _0x2fdfx69 *= -1
+                    };
+                    let _0x2fdfx73 = _0x2fdfx6f * _0x2fdfx69;
+                    let _0x2fdfx74 = -_0x2fdfx6e * _0x2fdfx69;
+                    let _0x2fdfx75 = _0x2fdfx2d;
+                    let _0x2fdfx76 = _0x2fdfx2b;
+                    let _0x2fdfx77 = _0x2fdfx75 - _0x2fdfx70 + _0x2fdfx73;
+                    let _0x2fdfx78 = _0x2fdfx76 - _0x2fdfx71 + _0x2fdfx74;
+                    let _0x2fdfx79 = _0x2fdfx75 - _0x2fdfx70 * _0x2fdfx72;
+                    let _0x2fdfx7a = _0x2fdfx76 - _0x2fdfx71 * _0x2fdfx72;
+                    if (_0x2fdfx6a['getRotation']() === 1) {
+                        _0x2fdfx75 = _0x2fdfx2c;
+                        _0x2fdfx76 = _0x2fdfx2a;
+                        _0x2fdfx77 = _0x2fdfx75 + _0x2fdfx70 - _0x2fdfx73;
+                        _0x2fdfx78 = _0x2fdfx76 + _0x2fdfx71 - _0x2fdfx74;
+                        _0x2fdfx79 = _0x2fdfx75 + _0x2fdfx70 * _0x2fdfx72;
+                        _0x2fdfx7a = _0x2fdfx76 + _0x2fdfx71 * _0x2fdfx72
+                    };
+                    canvas['beginPath']();
+                    canvas['moveTo'](_0x2fdfx75, _0x2fdfx76);
+                    canvas['lineTo'](_0x2fdfx77, _0x2fdfx78);
+                    canvas['lineTo'](_0x2fdfx79, _0x2fdfx7a);
+                    canvas['fill']();
+                    canvas['closePath']()
+                }
+            }
+        }
+        let gNames = new Array();
+        let genes = new Array();
+        let g = -1;
+        g++;
+        const DRAGON_CURVE = g;
+        gNames[g] = 'dragon curve';
+        genes[g] = 'G   1 0 0 0   0 1 1 0';
+        g++;
+        const POLYA = g;
+        gNames[g] = 'Polya curve';
+        genes[g] = 'G   1 0 0 1   0 1 1 1';
+        g++;
+        const TER_DRAGON = g;
+        gNames[g] = 'Terdragon';
+        genes[g] = 'E   1 1 0 0   0-1 0 0   1 1 0 0';
+        g++;
+        const INVERTED_TER = g;
+        gNames[g] = 'Inverted Ter';
+        genes[g] = 'E   1 1 0 1   0-1 0 1   1 1 0 1';
+        g++;
+        const BUTTERFLY = g;
+        gNames[g] = 'butterfly';
+        genes[g] = 'E   1 1 1 1   1 1 1 1   0-1 0 1';
+        g++;
+        const WALKING_TER = g;
+        gNames[g] = 'Walking ter';
+        genes[g] = 'E   1 1 1 0   1 1 0 0   0-1 0 0';
+        g++;
+        const CHAIR = g;
+        gNames[g] = 'Fractal Chair';
+        genes[g] = 'E   1 1 0 0   1 1 0 0   0-1 1 0';
+        g++;
+        const HALF_TER = g;
+        gNames[g] = 'Half-Terdragon';
+        genes[g] = 'E   1 1 0 0   1 1 1 0   0-1 0 0';
+        g++;
+        const AVOID_3 = g;
+        gNames[g] = 'Avoid 3';
+        genes[g] = 'E   1 1 0 1   1 1 1 1   0-1 1 1';
+        g++;
+        const HOOK_3 = g;
+        gNames[g] = 'Hook 3';
+        genes[g] = 'E   1 1 0 1   1 1 1 1   0-1 0 0';
+        g++;
+        const BLOB_3 = g;
+        gNames[g] = 'Blob 3';
+        genes[g] = 'E   1 1 0 1   1 1 1 1   0-1 0 1';
+        g++;
+        const BOX_3 = g;
+        gNames[g] = 'Box 3';
+        genes[g] = 'E   1 1 0 1   0-1 0 0   1 1 0 1';
+        g++;
+        const V1_DRAGON = g;
+        gNames[g] = 'V1 Dragon';
+        genes[g] = 'G   1 1 0 0   1 0 1 0   0-1 0 0';
+        g++;
+        const TEXTURE_DRAGON = g;
+        gNames[g] = 'Texture Dragon';
+        genes[g] = 'G   1 1 0 0   0-1 0 0   1 0 1 0';
+        g++;
+        const CITY_4 = g;
+        gNames[g] = 'City 4';
+        genes[g] = 'G   0 1 0 1   1 0 1 1   0-1 0 1   1 0 1 1';
+        g++;
+        const BOX_4 = g;
+        gNames[g] = 'Box 4';
+        genes[g] = 'G   0 1 1 1   1 0 0 0   0-1 1 0   1 0 0 1';
+        g++;
+        const TOSSED_CITY = g;
+        gNames[g] = 'Tossed City';
+        genes[g] = 'G   0 1 1 1   1 0 0 1   0-1 1 1   1 0 0 1';
+        g++;
+        const CESARO = g;
+        gNames[g] = 'Cesaro';
+        genes[g] = 'G   1 0 0 0   0 1 0 0   0-1 0 0   1 0 0 0';
+        g++;
+        const DRAGON_OF_EVE = g;
+        gNames[g] = 'Dragon of Eve';
+        genes[g] = 'G   1 0 1 0   1 1 0 0   0-1 0 0';
+        g++;
+        const CARBAJO = g;
+        gNames[g] = 'Carbajo';
+        genes[g] = 'G   1 1 1 0   1 0 0 0   0-1 0 0';
+        g++;
+        const TILE_CURVE = g;
+        gNames[g] = 'Tile curve';
+        genes[g] = 'G   0 1 0 0   1-1 1 0   1 0 0 0';
+        g++;
+        const PEANO_SWEEP = g;
+        gNames[g] = 'Peano sweep';
+        genes[g] = 'G   0 1 1 0   1 0 0 0   1 0 0 0   0-1 1 0';
+        g++;
+        const DRAGON_4 = g;
+        gNames[g] = '4 dragon';
+        genes[g] = 'E   1 1 0 0   0-1 0 0   0-1 0 0   1 1 0 0';
+        g++;
+        const TRIANGLE_4 = g;
+        gNames[g] = 'Triangle 4';
+        genes[g] = 'G   1 1 1 1   0-1 1 0   1 0 0 0';
+        g++;
+        const SIERP_FAMILY = g;
+        gNames[g] = 'Sierp Family';
+        genes[g] = 'E   1 1 0 1   0-1 1 0   1 0 0 0';
+        g++;
+        const SIERPINSKI = g;
+        gNames[g] = 'Sierpinski';
+        genes[g] = 'E   1 1 1 0   1 0 0 0   0-1 1 0';
+        g++;
+        const SPLOTCH = g;
+        gNames[g] = 'Splotch';
+        genes[g] = 'E   1 1 0 0   1 1 1 0   0-1 0 0   0-1 1 0';
+        g++;
+        const BROKE_GASKET = g;
+        gNames[g] = 'broke gasket';
+        genes[g] = 'E   1 1 0 1   1 1 1 1   0-1 0 1   0-1 1 1';
+        g++;
+        const EDGE = g;
+        gNames[g] = 'edge';
+        genes[g] = 'E   1 1 1 1   0-1 0 0   0-1 1 1   1 1 1 1';
+        g++;
+        const TRI_4 = g;
+        gNames[g] = '4 tri';
+        genes[g] = 'E   1 1 0 1   1 0 0 0  -1-1 1 0   1 0 0 0';
+        g++;
+        const GASKET = g;
+        gNames[g] = 'Gasket';
+        genes[g] = 'E   1 1 0 1   0-1 0 1   0-1 0 1   1 1 0 1';
+        g++;
+        const FIVE_PINE = g;
+        gNames[g] = '5-Pine';
+        genes[g] = 'G   0 1 1 0   1 0 0 0   0 1 1 0   1 0 0 0   0-1 1 0';
+        g++;
+        const QUARTET = g;
+        gNames[g] = 'Quartet';
+        genes[g] = 'G   0 1 1 0   0 1 0 0   1 0 0 0   0-1 1 0   1 0 0 0';
+        g++;
+        const DRAGON_5 = g;
+        gNames[g] = '5-Dragon';
+        genes[g] = 'G   0 1 0 0   1 0 0 0   0-1 0 0   1 0 0 0   0 1 0 0';
+        g++;
+        const FIVE_JAGGY = g;
+        gNames[g] = '5-Jaggy';
+        genes[g] = 'G   1 0 1 0   0 1 1 0   0 1 0 0   1 0 0 0   0-1 0 0';
+        g++;
+        const FIVE_JAGGY_2 = g;
+        gNames[g] = '5-Jaggy_2';
+        genes[g] = 'G   0 1 0 0   0 1 1 0   1 0 0 0   1 0 1 0   0-1 0 0';
+        g++;
+        const FIVE_BLOB = g;
+        gNames[g] = '5-Blob';
+        genes[g] = 'G   1 0 0 1   0 1 0 1   0 1 1 1   1 0 1 1   0-1 1 1';
+        g++;
+        const FIVE_CRAZY = g;
+        gNames[g] = '5-Crazy';
+        genes[g] = 'G   0 1 0 0   1 0 1 0   0 1 0 0   1 0 1 0   0-1 0 0';
+        g++;
+        const GOSPER_DRAGON = g;
+        gNames[g] = 'Gosper Dragon';
+        genes[g] =
+            'E  -1-1 0 0   1 0 0 0   1 0 1 0   1 0 0 0   0 1 0 0   0 1 1 0   1 0 1 0';
+        g++;
+        const SWAN_BLOB = g;
+        gNames[g] = 'Swan Blob';
+        genes[g] =
+            'E  -1-1 1 1   1 0 1 1   1 0 0 1   1 0 1 1   0 1 1 1   0 1 0 1   1 0 0 1';
+        g++;
+        const GOSPER = g;
+        gNames[g] = 'Gosper curve';
+        genes[g] =
+            'E   1 0 0 0   1 1 1 0  -1 0 1 0   0 1 0 0   1 0 0 0   1 0 0 0   0-1 1 0';
+        g++;
+        const GOSPER_HOOK = g;
+        gNames[g] = 'Gosper hook';
+        genes[g] =
+            'E   1 0 0 0   1 0 1 0   0 1 0 0   0 1 1 0   1 0 0 0   1 0 1 0  -1-1 0 0';
+        g++;
+        const GOSPER_BLOB = g;
+        gNames[g] = 'Gosper blob';
+        genes[g] =
+            'E   1 0 0 1   1 0 1 1   0 1 0 1   0 1 1 1   1 0 0 1   1 0 1 1  -1-1 0 1';
+        g++;
+        const GOSPER_PINCH = g;
+        gNames[g] = 'Gosper pinch';
+        genes[g] =
+            'E   1 0 0 1   1 0 1 1   1 0 0 1   1 0 1 1   0 1 0 1   0 1 1 1  -1-1 0 1';
+        g++;
+        const GOSPER_NESTED = g;
+        gNames[g] = 'Gosper nested';
+        genes[g] =
+            'E   1 0 0 0   1 0 1 0   1 0 0 0   1 0 1 0   0 1 0 0   0 1 1 0  -1-1 0 0';
+        g++;
+        const DRAGON_7 = g;
+        gNames[g] = '7 Dragon';
+        genes[g] =
+            'E   1 0 0 0   0 1 0 0   1 0 0 0  -1-1 0 0   1 0 0 0   0 1 0 0   1 0 0 0';
+        g++;
+        const JAGGED = g;
+        gNames[g] = 'Jagged';
+        genes[g] =
+            'E   1 0 0 0   1 0 0 0   0 1 0 0   0 1 0 0   1 0 0 0  -1-1 0 0   1 0 0 0';
+        g++;
+        const FUN = g;
+        gNames[g] = 'Fun';
+        genes[g] =
+            'E   1 0 1 0   1 0 1 0   0 1 1 0   0 1 1 0   1 0 1 0  -1-1 1 0   1 0 1 0';
+        g++;
+        const VENTRELLA_CURVE = g;
+        gNames[g] = 'V-curve';
+        genes[g] =
+            'E   1 1 0 0   0 1 0 0   1 0 0 0  -1-1 0 0   0-1 0 0   1 0 0 0   1 1 0 0';
+        g++;
+        const VENTRELLA_FLIP = g;
+        gNames[g] = 'V-curve-flip';
+        genes[g] =
+            'E   1 1 1 1   0 1 1 1   1 0 1 1  -1-1 1 1   0-1 1 1   1 0 1 1   1 1 1 1';
+        g++;
+        const WOLD_7 = g;
+        gNames[g] = 'wild_7';
+        genes[g] =
+            'E   0 1 0 0   1 0 0 0   1 0 0 0  -1-1 0 0   1 0 0 0   1 0 0 0   1 1 0 0';
+        g++;
+        const SYM_7_1 = g;
+        gNames[g] = 'sym_7_1';
+        genes[g] =
+            'E   0 1 0 0   1 0 0 0   1 0 0 0  -1-1 0 0   1 0 0 0   1 0 0 0   0 1 0 0';
+        g++;
+        const SYM_7_2 = g;
+        gNames[g] = 'sym_7_2';
+        genes[g] =
+            'E   0 1 1 1   1 0 0 1   1 0 0 1  -1-1 0 1   1 0 0 1   1 0 0 1   0 1 0 1';
+        g++;
+        const ASSYM_7_1 = g;
+        gNames[g] = 'assym_7_1';
+        genes[g] =
+            'E  -1-1 0 0   1 0 1 0   1 0 0 0   1 0 1 0   1 0 0 0   0 1 1 0   0 1 0 0';
+        g++;
+        const ASSYM_7_2 = g;
+        gNames[g] = 'assym_7_2';
+        genes[g] =
+            'E  -1-1 0 1   1 0 1 1   1 0 0 1   1 0 1 1   1 0 0 1   0 1 1 1   0 1 0 1';
+        g++;
+        const CARB_8 = g;
+        gNames[g] = 'Carb-8';
+        genes[g] = 'G  -1 1 0 0   1 1 0 0   1-1 0 0   1 0 1 0   0 1 1 0';
+        g++;
+        const BRAIN_FILLER = g;
+        gNames[g] = 'Brainfiller';
+        genes[g] = 'G   0 2 0 1   1 0 0 1   0-1 1 1   1 0 0 1   0 1 1 1';
+        g++;
+        const BRAIN_DRAGON = g;
+        gNames[g] = 'BrainDragon';
+        genes[g] = 'G   0 2 0 0   1 0 0 0   0-1 1 0   1 0 0 0   0 1 1 0';
+        g++;
+        const EVE_8 = g;
+        gNames[g] = 'Eve-8';
+        genes[g] = 'G  -1 1 0 0   0 1 0 0   1-1 0 0   1 0 1 0   1 1 1 0';
+        g++;
+        const EIGHT_FILLER = g;
+        gNames[g] = '8-filler';
+        genes[g] = 'G  -1 1 0 0   0 1 0 1   1 1 0 0   1 0 0 1   1-1 0 0';
+        g++;
+        const STAR_EIGHT = g;
+        gNames[g] = 'star-8';
+        genes[g] =
+            'G   0 1 0 0   0 1 1 0  -1 0 0 0   0 1 0 0   1 0 1 0   1 0 0 0   0-1 1 0   1 0 1 0';
+        g++;
+        const BROKEN_TWINS = g;
+        gNames[g] = 'broken twins';
+        genes[g] = 'G   0 1 0 0   0 1 0 0   1-1 0 0   1-1 0 0   0 1 0 0   0 1 0 0';
+        g++;
+        const TRI_8_1 = g;
+        gNames[g] = 'Tri 8 1';
+        genes[g] = 'G   1 1 0 0   0 1 0 0  -1 0 1 0   1 1 0 0   1-1 0 1';
+        g++;
+        const EDGE_8 = g;
+        gNames[g] = 'Edge 8';
+        genes[g] = 'G   1 1 0 0   0 1 0 1  -1 0 1 0   1 1 0 0   1-1 1 1';
+        g++;
+        const TILE_8 = g;
+        gNames[g] = 'Tile 8';
+        genes[g] = 'G   1 1 0 0   0 1 1 0   1-1 0 0   1 0 1 0  -1 1 0 0';
+        g++;
+        const TWIN_PIECE = g;
+        gNames[g] = 'Twin Piece';
+        genes[g] = 'G  -1 1 1 0  -1 1 0 0   1 0 1 0   1 0 0 0   1 0 1 0   1 0 0 0';
+        g++;
+        const SQUARE_KOCH = g;
+        gNames[g] = 'quadratic Koch';
+        genes[g] = 'G   1 0 0 0   0 1 0 0   1 0 0 0   0-1 0 0   1 0 0 0';
+        g++;
+        const PEANO = g;
+        gNames[g] = 'original Peano';
+        genes[g] =
+            'G   1 0 0 0   0 1 0 0   1 0 0 0   0-1 0 0  -1 0 0 0   0-1 0 0   1 0 0 0   0 1 0 0   1 0 0 0';
+        g++;
+        const TRI_9 = g;
+        gNames[g] = 'tri 9';
+        genes[g] =
+            'G   1 0 0 0   0 1 1 0   1 0 0 0   0 1 1 0   1 0 0 0   0-1 1 0  -1 0 0 0   0-1 1 0   1 0 0 0';
+        g++;
+        const CITY_9 = g;
+        gNames[g] = 'city 9';
+        genes[g] =
+            'G   1 0 1 1   0 1 0 1   1 0 1 1   0 1 0 1   1 0 1 1   0-1 0 1  -1 0 1 1   0-1 0 1   1 0 1 1';
+        g++;
+        const CRAGGY_9 = g;
+        gNames[g] = 'Craggy 9';
+        genes[g] =
+            'G   1 0 1 0   0 1 0 0   1 0 1 0   0 1 0 0   1 0 1 0   0-1 0 0  -1 0 1 0   0-1 0 0   1 0 1 0';
+        g++;
+        const JAGGY_9_1 = g;
+        gNames[g] = 'Jaggy 9-1';
+        genes[g] =
+            'G  -1 0 0 0   0 1 1 0   1 0 0 0   0 1 1 1   1 0 0 1   0-1 1 0   1 0 0 0   0-1 1 1   1 0 0 1';
+        g++;
+        const TOSS_9 = g;
+        gNames[g] = 'toss 9';
+        genes[g] =
+            'G   1 0 0 1   0 1 1 1   1 0 0 1   0 1 1 1   1 0 0 1   0-1 1 1  -1 0 0 1   0-1 1 1   1 0 0 1';
+        g++;
+        const KOCH = g;
+        gNames[g] = 'Koch curve';
+        genes[g] = 'E   1 0 0 0   1 1 0 0   0-1 0 0   1 0 0 0';
+        g++;
+        const SCROLL = g;
+        gNames[g] = 'scroll';
+        genes[g] = 'E   1 2 0 0   1 0 0 1   1 0 0 0   1 0 0 1  -1-2 0 0';
+        g++;
+        const WALKING_9 = g;
+        gNames[g] = 'walking-9';
+        genes[g] = 'E   1 2 0 0   1-1 0 0   0-1 0 0   0-1 1 0   1 1 1 0';
+        g++;
+        const FUZZY_CRADLE = g;
+        gNames[g] = 'fuzzy-cradle';
+        genes[g] = 'E   1 1 0 0   2 1 1 0   1 1 0 0  -1-2 0 0   0-1 1 0';
+        g++;
+        const FRAYED_CARPET = g;
+        gNames[g] = 'frayed-carpet';
+        genes[g] =
+            'E   1 2 1 1   1 0 1 0   1 0 0 0  -1-1 0 0  -1-1 1 0   1 0 1 0   1 0 0 0';
+        g++;
+        const JAGGY_CARPET = g;
+        gNames[g] = 'jaggy-carpet';
+        genes[g] =
+            'E   1 2 0 1   1 0 1 0   1 0 0 0  -1-1 1 0  -1-1 0 0   1 0 1 0   1 0 0 0';
+        g++;
+        const SNOWFLAKE = g;
+        gNames[g] = 'Snowflake sweep';
+        genes[g] =
+            'E   1 1 1 0   1 1 0 0   1 0 0 0   0-1 0 0  -2-1 1 0   1 0 1 0   1 0 0 0';
+        g++;
+        const AVOID_E_9_1 = g;
+        gNames[g] = 'avoid-E91';
+        genes[g] =
+            'E   0 1 0 1   0 1 1 1   1 0 1 1   1 0 0 1   1 0 1 1  -1-1 1 1  -1-1 0 1   1 0 0 1   1 0 1 1';
+        g++;
+        const AVOID_E_9_2 = g;
+        gNames[g] = 'avoid-E92';
+        genes[g] =
+            'E   0 1 0 1   0 1 0 0   1 0 0 0   1 0 0 1   1 0 0 0  -1-1 0 0  -1-1 0 1   1 0 0 1   1 0 0 0';
+        g++;
+        const MAPLE = g;
+        gNames[g] = 'maple';
+        genes[g] =
+            'E   1 0 0 0   0 1 0 0   1 0 0 0  -1-1 0 0 -1-1 0 0   1 0 0 0  0 1 0 0  1 0 0 0  1 0 0 0';
+        g++;
+        const NINE_AVOID = g;
+        gNames[g] = 'Avoid 9';
+        genes[g] = 'E   2 1 1 0   1 1 1 0   1 1 0 0   0-1 0 0  -1-2 0 0';
+        g++;
+        const HOLIDAY_TREE = g;
+        gNames[g] = 'Holiday Tree';
+        genes[g] = 'E   2 1 1 0   0 1 0 0   1 0 0 0  -1-1 0 0   1-1 1 0';
+        g++;
+        const COMPLEX_INV_TER = g;
+        gNames[g] = 'plex-inv-Tter';
+        genes[g] = 'E   1-1 1 1   1 2 0 1   1 0 1 0  -1-1 1 0   1 0 0 0';
+        g++;
+        const AVOID_BRAIN = g;
+        gNames[g] = 'avoid-brain';
+        genes[g] = 'E   1 2 1 1   1 0 1 0   1 0 0 0  -1-1 0 0   1-1 0 1';
+        g++;
+        const COOL_E9 = g;
+        gNames[g] = 'cool e9';
+        genes[g] =
+            'E   0 1 1 0   0 1 0 0   1 0 0 0   1-1 1 1  -1-1 1 0   1 0 1 0   1 0 0 0';
+        g++;
+        const THING_E9 = g;
+        gNames[g] = 'thing e9';
+        genes[g] =
+            'E   1 0 0 0   1 2 1 1   1 0 0 0  -1-1 1 0  -1-1 0 0   1 0 0 1   1 0 0 0';
+        g++;
+        const TRIANGLE_9 = g;
+        gNames[g] = 'triangle 9';
+        genes[g] =
+            'E   1 0 0 0   0 1 1 0   1 0 0 0   0 1 1 0   1 0 0 0  -1-1 0 0   0-1 1 0   1 1 0 0   0-1 1 0';
+        g++;
+        const CARPET_1 = g;
+        gNames[g] = 'carpet 1';
+        genes[g] = 'E   1-1 0 1   1 2 0 0   1 0 0 0  -1-1 0 1   1 0 1 0';
+        g++;
+        const THING_9 = g;
+        gNames[g] = 'Thing9';
+        genes[g] = 'E   2 1 0 1   2 1 1 1  -1-1 0 0  -1-1 1 0   1 0 0 0';
+        g++;
+        const B1 = g;
+        gNames[g] = 'B1';
+        genes[g] =
+            'E   2 1 0 0   0 1 1 0   1 0 0 0   1 0 1 0  -1-1 0 0  -1-1 1 0   1 0 0 0';
+        g++;
+        const B2 = g;
+        gNames[g] = 'B2';
+        genes[g] =
+            'E   2 1 0 1   0 1 1 0   1 0 0 0   1 0 1 0  -1-1 0 0  -1-1 1 0   1 0 0 0';
+        g++;
+        const UGLY_10 = g;
+        gNames[g] = 'Ugly 10';
+        genes[g] =
+            'G   1 0 0 0   0 1 1 0   1 0 0 0   0-1 1 0  -1 0 0 0   0-1 1 0   1 0 0 0   0 1 1 0   1 0 0 0   0 1 1 0';
+        g++;
+        const NUM_GENERATORS = g;
+        const MAX_TERAGON_INTEGERS = 200000;
+
+        function Teragon() {
+            'use strict';
+            let _0x2fdfxde = new Generator();
+            let _0x2fdfx3c = new Array(MAX_TERAGON_INTEGERS);
+            let _0x2fdfx39 = 0;
+            this['create'] = function (_0x2fdfxdf, _0x2fdfxe0) {
+                _0x2fdfxde['copyFrom'](_0x2fdfxdf);
+                let _0x2fdfxe1 = new ComplexInteger();
+                _0x2fdfxe1['initialize'](_0x2fdfxde['getDomain'](), 1, 0);
+                let _0x2fdfxe2 = new Transform();
+                _0x2fdfxe2['setComponents'](0, 0);
+                _0x2fdfx39 = 0;
+                if (_0x2fdfxe0 > 0) {
+                    _0x2fdfxe3(_0x2fdfxe0, _0x2fdfxe1, _0x2fdfxe2)
+                } else {
+                    _0x2fdfxe8(_0x2fdfxe1)
+                }
+            };
+            this['getIntegerArray'] = function () {
+                let _0x2fdfx4e = new Array(MAX_TERAGON_INTEGERS);
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfx39; _0x2fdfx14++) {
+                    _0x2fdfx4e[_0x2fdfx14] = new ComplexInteger();
+                    _0x2fdfx4e[_0x2fdfx14]['setDomain'](_0x2fdfx3c[_0x2fdfx14][
+                        'getDomain'
+                    ]());
+                    _0x2fdfx4e[_0x2fdfx14]['setReal'](_0x2fdfx3c[_0x2fdfx14][
+                        'getReal'
+                    ]());
+                    _0x2fdfx4e[_0x2fdfx14]['setImaginary'](_0x2fdfx3c[_0x2fdfx14][
+                        'getImaginary'
+                    ]())
+                };
+                return _0x2fdfx4e
+            };
+            this['getIntegerArraySize'] = function () {
+                return _0x2fdfx39
+            };
+
+            function _0x2fdfxe3(_0x2fdfxe0, _0x2fdfxe4, _0x2fdfxe5) {
+                if (_0x2fdfxe0 === 0) {
+                    _0x2fdfxe8(_0x2fdfxe4)
+                } else {
+                    for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfxde['getNumIntegers']
+                        (); _0x2fdfx14++) {
+                        let _0x2fdfx4f = _0x2fdfx14;
+                        if (_0x2fdfxe5['getRotation']() === 1) {
+                            _0x2fdfx4f = _0x2fdfxde['getNumIntegers']() - 1 - _0x2fdfx14
+                        };
+                        let _0x2fdfxe6 = new ComplexInteger();
+                        _0x2fdfxe6['copyFrom'](_0x2fdfxde['getInteger'](_0x2fdfx4f));
+                        if (_0x2fdfxe5['getReflection']() === 1) {
+                            _0x2fdfxe6['conjugate']();
+                            if (_0x2fdfxde['getFamilyInteger']()['getImaginary']() >
+                                0) {
+                                let _0x2fdfxe7 = new ComplexInteger();
+                                if (_0x2fdfxde['getDomain']() === GAUSSIAN_DOMAIN) {
+                                    _0x2fdfxe7['initialize'](_0x2fdfxde['getDomain'](),
+                                        0, 1)
+                                } else {
+                                    _0x2fdfxe7['initialize'](_0x2fdfxde['getDomain'](),
+                                        1, 1)
+                                };
+                                _0x2fdfxe6['multiply'](_0x2fdfxe7)
+                            }
+                        };
+                        _0x2fdfxe6['multiply'](_0x2fdfxe4);
+                        let _0x2fdfx6a = new Transform();
+                        _0x2fdfx6a['copyFrom'](_0x2fdfxde['getTransform'](_0x2fdfx4f));
+                        if (_0x2fdfxe5['getRotation']() === 1) {
+                            if (_0x2fdfx6a['getRotation']() === 1) {
+                                _0x2fdfx6a['setRotation'](0)
+                            } else {
+                                _0x2fdfx6a['setRotation'](1)
+                            }
+                        };
+                        if (_0x2fdfxe5['getReflection']() === 1) {
+                            if (_0x2fdfx6a['getReflection']() === 1) {
+                                _0x2fdfx6a['setReflection'](0)
+                            } else {
+                                _0x2fdfx6a['setReflection'](1)
+                            }
+                        };
+                        _0x2fdfxe3(_0x2fdfxe0 - 1, _0x2fdfxe6, _0x2fdfx6a)
+                    }
+                }
+            }
+
+            function _0x2fdfxe8(_0x2fdfxe6) {
+                _0x2fdfx3c[_0x2fdfx39] = new ComplexInteger();
+                _0x2fdfx3c[_0x2fdfx39]['copyFrom'](_0x2fdfxe6);
+                _0x2fdfx39++
+            }
+        }
+
+        function Renderer() {
+            const _0x2fdfxea = 3;
+            const _0x2fdfxeb = 0.2;
+            const _0x2fdfxec = 50;
+            const _0x2fdfxed = 1.6;
+            const _0x2fdfxee = 3;
+            const _0x2fdfxef = 'rgb( 50, 40, 30 )';
+            const _0x2fdfxf0 = 4;
+
+            function _0x2fdfxf1() {
+                this['x'] = ZERO;
+                this['y'] = ZERO
+            }
+
+            function _0x2fdfxf2() {
+                this['r'] = ZERO;
+                this['g'] = ZERO;
+                this['b'] = ZERO
+            }
+
+            function _0x2fdfxf3() {
+                this['offset'] = ZERO;
+                this['amplitude'] = ZERO;
+                this['frequency'] = ZERO;
+                this['phase'] = ZERO;
+                this['red'] = ZERO;
+                this['green'] = ZERO;
+                this['blue'] = ZERO
+            }
+
+            function _0x2fdfxf4() {
+                this['clock'] = 0;
+                this['growing'] = false;
+                this['level'] = 0;
+                this['stage'] = 0;
+                this['jump'] = 0;
+                this['duration'] = 0;
+                this['wave'] = ZERO
+            }
+            let _0x2fdfxf5 = 0;
+            let _0x2fdfxf6 = 0;
+            let _0x2fdfxf7 = new Array();
+            let _0x2fdfxf8 = 0;
+            let _0x2fdfxf9 = 0;
+            let _0x2fdfxfa = 0;
+            let _0x2fdfxfb = 0;
+            let _0x2fdfxfc = ZERO;
+            let _0x2fdfxfd = ZERO;
+            let _0x2fdfxfe = false;
+            let _0x2fdfxff = new _0x2fdfxf4();
+            let _0x2fdfx100 = new _0x2fdfxf1();
+            let _0x2fdfx101 = new _0x2fdfxf1();
+            let _0x2fdfx102 = new _0x2fdfxf1();
+            let _0x2fdfx103 = false;
+            let _0x2fdfx104 = new Array();
+            let _0x2fdfx105 = 0;
+            this['setTeragon'] = function (_0x2fdfx106, _0x2fdfx107, _0x2fdfx108) {
+                _0x2fdfxf6 = _0x2fdfx108;
+                _0x2fdfxf5 = _0x2fdfx106;
+                _0x2fdfxfa = 0;
+                _0x2fdfxfb = 0;
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfxf5; _0x2fdfx14++) {
+                    _0x2fdfxfa += _0x2fdfx107[_0x2fdfx14]['getReal']();
+                    _0x2fdfxfb += _0x2fdfx107[_0x2fdfx14]['getImaginary']()
+                };
+                let _0x2fdfx109 = _0x2fdfxfa * _0x2fdfxfa + _0x2fdfxfb * _0x2fdfxfb;
+                _0x2fdfxfc = _0x2fdfxfa / _0x2fdfx109;
+                _0x2fdfxfd = -_0x2fdfxfb / _0x2fdfx109;
+                let _0x2fdfx13 = _0x2fdfxfc;
+                let _0x2fdfx14 = _0x2fdfxfd;
+                _0x2fdfxfc = (_0x2fdfx13 * _0x2fdfxf8) - (_0x2fdfx14 * _0x2fdfxf9);
+                _0x2fdfxfd = (_0x2fdfx13 * _0x2fdfxf9) + (_0x2fdfx14 * _0x2fdfxf8);
+                let _0x2fdfx1e = ZERO;
+                let _0x2fdfx1f = ZERO;
+                for (let _0x2fdfx10a = 0; _0x2fdfx10a < _0x2fdfxf5; _0x2fdfx10a++) {
+                    let _0x2fdfx10b = (_0x2fdfxfc * _0x2fdfx107[_0x2fdfx10a][
+                        'getReal'
+                    ]()) - (_0x2fdfxfd * _0x2fdfx107[_0x2fdfx10a][
+                        'getImaginary']());
+                    let _0x2fdfx10c = (_0x2fdfxfc * _0x2fdfx107[_0x2fdfx10a][
+                        'getImaginary'
+                    ]()) + (_0x2fdfxfd * _0x2fdfx107[_0x2fdfx10a]['getReal']());
+                    _0x2fdfx1e += _0x2fdfx10b;
+                    _0x2fdfx1f += _0x2fdfx10c;
+                    _0x2fdfxf7[_0x2fdfx10a] = new _0x2fdfxf1();
+                    _0x2fdfxf7[_0x2fdfx10a]['x'] = _0x2fdfx1e;
+                    _0x2fdfxf7[_0x2fdfx10a]['y'] = _0x2fdfx1f
+                };
+                for (let _0x2fdfx10d = 0; _0x2fdfx10d < _0x2fdfxf0; _0x2fdfx10d++) {
+                    _0x2fdfx104[_0x2fdfx10d] = new _0x2fdfxf3()
+                };
+                _0x2fdfx10e()
+            };
+
+            function _0x2fdfx10e() {
+                for (let _0x2fdfx10d = 0; _0x2fdfx10d < _0x2fdfxf0; _0x2fdfx10d++) {
+                    _0x2fdfx104[_0x2fdfx10d]['frequency'] = Math['floor'](1 + Math[
+                        'random']() * Math['random']() * Math['random']() *
+                        1000);
+                    _0x2fdfx104[_0x2fdfx10d]['amplitude'] = 0.0 + Math['random']() *
+                        1.0;
+                    _0x2fdfx104[_0x2fdfx10d]['offset'] = -1.0 + Math['random']() * 2.0;
+                    _0x2fdfx104[_0x2fdfx10d]['phase'] = -0.1 + Math['random']() * 0.2;
+                    _0x2fdfx104[_0x2fdfx10d]['red'] = 0.0 + Math['random']() * 1.0;
+                    _0x2fdfx104[_0x2fdfx10d]['green'] = 0.0 + Math['random']() * 1.0;
+                    _0x2fdfx104[_0x2fdfx10d]['blue'] = 0.0 + Math['random']() * 1.0
+                }
+            }
+            this['startGrowing'] = function (_0x2fdfxe0, _0x2fdfx10f) {
+                _0x2fdfxff['level'] = _0x2fdfxe0;
+                _0x2fdfxff['duration'] = _0x2fdfx10f;
+                _0x2fdfxff['stage'] = 0;
+                _0x2fdfxff['wave'] = ZERO;
+                _0x2fdfxff['jump'] = _0x2fdfxf5;
+                _0x2fdfxff['clock'] = 0;
+                _0x2fdfxff['growing'] = true
+            };
+            this['cancelGrowing'] = function () {
+                _0x2fdfxff['growing'] = false
+            };
+            this['getGrowing'] = function () {
+                return _0x2fdfxff['growing']
+            };
+            this['setSplined'] = function (_0x2fdfx4a) {
+                _0x2fdfxfe = _0x2fdfx4a
+            };
+            this['getSplined'] = function () {
+                return _0x2fdfxfe
+            };
+            this['setUsingColor'] = function (_0x2fdfx10a) {
+                _0x2fdfx103 = _0x2fdfx10a;
+                _0x2fdfx105 = 0;
+                _0x2fdfx10e()
+            };
+            this['setGeneratorEndpoint'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfxf8 = _0x2fdfx1e;
+                _0x2fdfxf9 = _0x2fdfx1f
+            };
+            this['render'] = function (_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28) {
+                canvas['lineCap'] = 'round';
+                canvas['lineJoin'] = 'round';
+                canvas['lineWidth'] = _0x2fdfxed;
+                canvas['strokeStyle'] = _0x2fdfxef;
+                if (_0x2fdfxff['growing']) {
+                    _0x2fdfx11e(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28)
+                } else {
+                    if (_0x2fdfx103) {
+                        _0x2fdfx111(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28)
+                    } else {
+                        _0x2fdfx110(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28)
+                    }
+                }
+            };
+
+            function _0x2fdfx110(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28) {
+                canvas['beginPath']();
+                _0x2fdfx12c(_0x2fdfx1e, _0x2fdfx1f);
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfxf5; _0x2fdfx14++) {
+                    _0x2fdfx12d(_0x2fdfx1e + _0x2fdfxf7[_0x2fdfx14]['x'] * _0x2fdfx28,
+                        _0x2fdfx1f - _0x2fdfxf7[_0x2fdfx14]['y'] * _0x2fdfx28)
+                };
+                _0x2fdfx13e(_0x2fdfx1e + _0x2fdfxf7[_0x2fdfxf5 - 1]['x'] * _0x2fdfx28,
+                    _0x2fdfx1f - _0x2fdfxf7[_0x2fdfxf5 - 1]['y'] * _0x2fdfx28);
+                canvas['stroke']();
+                canvas['closePath']()
+            }
+
+            function _0x2fdfx111(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28) {
+                canvas['lineWidth'] = _0x2fdfxee;
+                _0x2fdfx105++;
+                let _0x2fdfx112 = _0x2fdfx1e + _0x2fdfxf7[0]['x'] * _0x2fdfx28;
+                let _0x2fdfx113 = _0x2fdfx1f - _0x2fdfxf7[0]['y'] * _0x2fdfx28;
+                let _0x2fdfx114 = _0x2fdfx112;
+                let _0x2fdfx115 = _0x2fdfx113;
+                for (let _0x2fdfx14 = 1; _0x2fdfx14 < _0x2fdfxf5; _0x2fdfx14++) {
+                    _0x2fdfx114 = _0x2fdfx112;
+                    _0x2fdfx115 = _0x2fdfx113;
+                    _0x2fdfx112 = _0x2fdfx1e + _0x2fdfxf7[_0x2fdfx14]['x'] * _0x2fdfx28;
+                    _0x2fdfx113 = _0x2fdfx1f - _0x2fdfxf7[_0x2fdfx14]['y'] * _0x2fdfx28;
+                    let _0x2fdfx116 = _0x2fdfx14 / (_0x2fdfxf5 - 1);
+                    let _0x2fdfx13 = ZERO;
+                    let g = ZERO;
+                    let _0x2fdfx117 = ZERO;
+                    for (let _0x2fdfx10d = 0; _0x2fdfx10d < _0x2fdfxf0; _0x2fdfx10d++) {
+                        let _0x2fdfx118 = _0x2fdfx104[_0x2fdfx10d]['frequency'];
+                        let _0x2fdfx119 = _0x2fdfx104[_0x2fdfx10d]['phase'] *
+                            _0x2fdfx105;
+                        let _0x2fdfx11a = _0x2fdfx104[_0x2fdfx10d]['amplitude'] * (
+                            ONE_HALF + ONE_HALF * Math['sin'](_0x2fdfx116 * PI2 *
+                                _0x2fdfx118 + _0x2fdfx119));
+                        _0x2fdfx13 += _0x2fdfx104[_0x2fdfx10d]['red'] * _0x2fdfx11a +
+                            _0x2fdfx104[_0x2fdfx10d]['offset'];
+                        g += _0x2fdfx104[_0x2fdfx10d]['green'] * _0x2fdfx11a +
+                            _0x2fdfx104[_0x2fdfx10d]['offset'];
+                        _0x2fdfx117 += _0x2fdfx104[_0x2fdfx10d]['blue'] * _0x2fdfx11a +
+                            _0x2fdfx104[_0x2fdfx10d]['offset']
+                    };
+                    if (_0x2fdfx13 > ONE) {
+                        _0x2fdfx13 = ONE
+                    };
+                    if (g > ONE) {
+                        g = ONE
+                    };
+                    if (_0x2fdfx117 > ONE) {
+                        _0x2fdfx117 = ONE
+                    };
+                    if (_0x2fdfx13 < ZERO) {
+                        _0x2fdfx13 = ZERO
+                    };
+                    if (g < ZERO) {
+                        g = ZERO
+                    };
+                    if (_0x2fdfx117 < ZERO) {
+                        _0x2fdfx117 = ZERO
+                    };
+                    let _0x2fdfx11b = Math['floor'](_0x2fdfx13 * 255);
+                    let _0x2fdfx11c = Math['floor'](g * 255);
+                    let _0x2fdfx11d = Math['floor'](_0x2fdfx117 * 255);
+                    canvas['strokeStyle'] = 'rgb( ' + _0x2fdfx11b + ', ' + _0x2fdfx11c +
+                        ', ' + _0x2fdfx11d + ' )';
+                    canvas['beginPath']();
+                    canvas['moveTo'](_0x2fdfx114, _0x2fdfx115);
+                    canvas['lineTo'](_0x2fdfx112, _0x2fdfx113);
+                    canvas['stroke']();
+                    canvas['closePath']()
+                };
+                canvas['beginPath']();
+                _0x2fdfx13e(_0x2fdfx1e + _0x2fdfxf7[_0x2fdfxf5 - 1]['x'] * _0x2fdfx28,
+                    _0x2fdfx1f - _0x2fdfxf7[_0x2fdfxf5 - 1]['y'] * _0x2fdfx28);
+                canvas['stroke']();
+                canvas['closePath']()
+            }
+
+            function _0x2fdfx11e(_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx28) {
+                if (!_0x2fdfxff['growing']) {
+                    _0x2fdfxff['clock']++;
+                    if (_0x2fdfxff['clock'] === 0) {
+                        _0x2fdfxff['growing'] = true
+                    }
+                };
+                let _0x2fdfx11f = ONE;
+                if (_0x2fdfxff['growing']) {
+                    _0x2fdfxff['clock']++;
+                    _0x2fdfx11f = _0x2fdfxff['clock'] / _0x2fdfxff['duration'];
+                    if (_0x2fdfx11f > ONE) {
+                        _0x2fdfx11f = ZERO;
+                        _0x2fdfxff['clock'] = 0;
+                        _0x2fdfxff['stage']++;
+                        _0x2fdfxff['jump'] = 1;
+                        let _0x2fdfx120 = _0x2fdfxff['level'] - _0x2fdfxff['stage'];
+                        for (let _0x2fdfx121 = 0; _0x2fdfx121 <
+                            _0x2fdfx120; _0x2fdfx121++) {
+                            _0x2fdfxff['jump'] *= _0x2fdfxf6
+                        };
+                        if (_0x2fdfxff['stage'] === _0x2fdfxff['level']) {
+                            _0x2fdfxff['growing'] = false
+                        }
+                    };
+                    _0x2fdfxff['wave'] = ONE_HALF - ONE_HALF * Math['cos'](_0x2fdfx11f *
+                        Math['PI'])
+                };
+                canvas['strokeStyle'] = _0x2fdfxef;
+                canvas['lineCap'] = 'round';
+                canvas['beginPath']();
+                canvas['moveTo'](_0x2fdfx1e, _0x2fdfx1f);
+                let _0x2fdfx122 = _0x2fdfxff['jump'] / _0x2fdfxf6;
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfxf5; _0x2fdfx14++) {
+                    if (_0x2fdfx14 % _0x2fdfxff['jump'] === (_0x2fdfxff['jump'] - 1)) {
+                        if (_0x2fdfxff['stage'] < _0x2fdfxff['level']) {
+                            for (let _0x2fdfx123 = 1; _0x2fdfx123 <
+                                _0x2fdfxf6; _0x2fdfx123++) {
+                                let _0x2fdfx116 = _0x2fdfx123 / _0x2fdfxf6;
+                                let _0x2fdfx124 = _0x2fdfx14 - _0x2fdfxff['jump'];
+                                let _0x2fdfx125 = _0x2fdfx124 + _0x2fdfx122 *
+                                    _0x2fdfx123;
+                                let _0x2fdfx126 = ZERO;
+                                let _0x2fdfx127 = ZERO;
+                                if (_0x2fdfx124 >= 0) {
+                                    _0x2fdfx126 = _0x2fdfxf7[_0x2fdfx124]['x'];
+                                    _0x2fdfx127 = _0x2fdfxf7[_0x2fdfx124]['y']
+                                };
+                                let _0x2fdfx128 = _0x2fdfxf7[_0x2fdfx14]['x'] -
+                                    _0x2fdfx126;
+                                let _0x2fdfx129 = _0x2fdfxf7[_0x2fdfx14]['y'] -
+                                    _0x2fdfx127;
+                                xa0 = _0x2fdfx126;
+                                ya0 = _0x2fdfx127;
+                                xa1 = _0x2fdfxf7[_0x2fdfx14]['x'];
+                                ya1 = _0x2fdfxf7[_0x2fdfx14]['y'];
+                                let _0x2fdfx59 = _0x2fdfx126 + _0x2fdfx128 *
+                                    _0x2fdfx116;
+                                let _0x2fdfx5a = _0x2fdfx127 + _0x2fdfx129 *
+                                    _0x2fdfx116;
+                                let _0x2fdfx5b = _0x2fdfxf7[_0x2fdfx125]['x'];
+                                let _0x2fdfx5c = _0x2fdfxf7[_0x2fdfx125]['y'];
+                                let _0x2fdfx12a = _0x2fdfx59 + (_0x2fdfx5b -
+                                    _0x2fdfx59) * _0x2fdfxff['wave'];
+                                let _0x2fdfx12b = _0x2fdfx5a + (_0x2fdfx5c -
+                                    _0x2fdfx5a) * _0x2fdfxff['wave'];
+                                canvas['lineTo'](_0x2fdfx1e + _0x2fdfx12a * _0x2fdfx28,
+                                    _0x2fdfx1f - _0x2fdfx12b * _0x2fdfx28)
+                            }
+                        };
+                        canvas['lineTo'](_0x2fdfx1e + _0x2fdfxf7[_0x2fdfx14]['x'] *
+                            _0x2fdfx28, _0x2fdfx1f - _0x2fdfxf7[_0x2fdfx14]['y'] *
+                            _0x2fdfx28)
+                    }
+                };
+                canvas['stroke']();
+                canvas['closePath']()
+            }
+
+            function _0x2fdfx12c(_0x2fdfx1e, _0x2fdfx1f) {
+                canvas['moveTo'](_0x2fdfx1e, _0x2fdfx1f);
+                if (_0x2fdfxfe) {
+                    _0x2fdfx100['x'] = _0x2fdfx1e;
+                    _0x2fdfx100['y'] = _0x2fdfx1f;
+                    _0x2fdfx101['x'] = _0x2fdfx1e;
+                    _0x2fdfx101['y'] = _0x2fdfx1f;
+                    _0x2fdfx102['x'] = _0x2fdfx1e;
+                    _0x2fdfx102['y'] = _0x2fdfx1f
+                }
+            }
+
+            function _0x2fdfx12d(_0x2fdfx1e, _0x2fdfx1f) {
+                if (_0x2fdfxfe) {
+                    _0x2fdfx100['x'] = _0x2fdfx101['x'];
+                    _0x2fdfx100['y'] = _0x2fdfx101['y'];
+                    _0x2fdfx101['x'] = _0x2fdfx102['x'];
+                    _0x2fdfx101['y'] = _0x2fdfx102['y'];
+                    _0x2fdfx102['x'] = _0x2fdfx1e;
+                    _0x2fdfx102['y'] = _0x2fdfx1f;
+                    let _0x2fdfx12e = (_0x2fdfx101['x'] - _0x2fdfx100['x']) * ONE_HALF;
+                    let _0x2fdfx12f = (_0x2fdfx101['y'] - _0x2fdfx100['y']) * ONE_HALF;
+                    let _0x2fdfx130 = (_0x2fdfx102['x'] - _0x2fdfx101['x']) * ONE_HALF;
+                    let _0x2fdfx131 = (_0x2fdfx102['y'] - _0x2fdfx101['y']) * ONE_HALF;
+                    let _0x2fdfx132 = _0x2fdfx100['x'] + _0x2fdfx12e;
+                    let _0x2fdfx133 = _0x2fdfx100['y'] + _0x2fdfx12f;
+                    let _0x2fdfx134 = _0x2fdfx101['x'] + _0x2fdfx130;
+                    let _0x2fdfx135 = _0x2fdfx101['y'] + _0x2fdfx131;
+                    let _0x2fdfx6d = Math['sqrt'](_0x2fdfx130 * _0x2fdfx130 +
+                        _0x2fdfx131 * _0x2fdfx131);
+                    let _0x2fdfx136 = _0x2fdfxea + Math['floor'](_0x2fdfxeb *
+                        _0x2fdfx6d);
+                    for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfx136; _0x2fdfx14++) {
+                        let _0x2fdfx137 = _0x2fdfx14 / (_0x2fdfx136 - 1);
+                        let _0x2fdfx138 = _0x2fdfx132 + _0x2fdfx12e * _0x2fdfx137;
+                        let _0x2fdfx139 = _0x2fdfx133 + _0x2fdfx12f * _0x2fdfx137;
+                        let _0x2fdfx13a = _0x2fdfx101['x'] + _0x2fdfx130 * _0x2fdfx137;
+                        let _0x2fdfx13b = _0x2fdfx101['y'] + _0x2fdfx131 * _0x2fdfx137;
+                        let _0x2fdfx13c = _0x2fdfx138 + (_0x2fdfx13a - _0x2fdfx138) *
+                            _0x2fdfx137;
+                        let _0x2fdfx13d = _0x2fdfx139 + (_0x2fdfx13b - _0x2fdfx139) *
+                            _0x2fdfx137;
+                        canvas['lineTo'](_0x2fdfx13c, _0x2fdfx13d)
+                    }
+                } else {
+                    canvas['lineTo'](_0x2fdfx1e, _0x2fdfx1f)
+                }
+            }
+
+            function _0x2fdfx13e(_0x2fdfx1e, _0x2fdfx1f) {
+                if (_0x2fdfxfe) {
+                    canvas['lineTo'](_0x2fdfx1e, _0x2fdfx1f)
+                }
+            }
+        }
+        var canvasID = document['getElementById']('Canvas');
+        var canvas = canvasID['getContext']('2d');
+
+        function App() {
+            'use strict';
+            const _0x2fdfx33 = 'rgb( 255, 250, 245 )';
+            const _0x2fdfx142 = 'rgb(   0,   0,   0 )';
+            const _0x2fdfx143 = 20;
+            const _0x2fdfx144 = 2000;
+            const _0x2fdfx145 = 10;
+            const _0x2fdfx146 = 10;
+            const _0x2fdfx147 = 20;
+            const _0x2fdfx148 = 50;
+            const _0x2fdfx149 = 0.5;
+            const _0x2fdfx14a = 0.75;
+            const _0x2fdfx14b = 0.01;
+            const _0x2fdfx14c = canvas['canvas']['width'] * ONE_HALF - 30;
+            const _0x2fdfx14d = canvas['canvas']['height'] * ONE_HALF + 50;
+            const _0x2fdfx14e = 120;
+            const _0x2fdfx14f = SNOWFLAKE;
+            const _0x2fdfx150 = true;
+            const _0x2fdfx151 = 4;
+            const _0x2fdfx152 = '#aabbcc';
+            const _0x2fdfx153 = '#ffffff';
+            const _0x2fdfx154 = 20;
+            const _0x2fdfx155 = 20;
+            const _0x2fdfx156 = 18;
+            const _0x2fdfx157 = 20;
+
+            function _0x2fdfx158() {
+                let _0x2fdfx159 = 0;
+                let _0x2fdfx15a = 0;
+                let _0x2fdfx15b = 0
+            }
+
+            function _0x2fdfx15c() {
+                this['x'] = 0;
+                this['y'] = 0;
+                this['prevX'] = 0;
+                this['prevY'] = 0;
+                this['velX'] = 0.0;
+                this['velY'] = 0.0;
+                this['down'] = false
+            }
+            let _0x2fdfx15d = new _0x2fdfx158();
+            let _0x2fdfx15e = new Lattice();
+            let _0x2fdfxde = new Generator();
+            let _0x2fdfx15f = new Teragon();
+            let _0x2fdfx160 = new Renderer();
+            let _0x2fdfx161 = new _0x2fdfx15c();
+            let _0x2fdfx162 = true;
+            let _0x2fdfx163 = false;
+            let _0x2fdfx164 = false;
+            let _0x2fdfxfe = false;
+            let _0x2fdfx165 = false;
+            let _0x2fdfx166 = 0;
+            this['initialize'] = function () {
+                _0x2fdfx167();
+                _0x2fdfx166 = _0x2fdfx151;
+                this['setSplined'](_0x2fdfxfe);
+                this['loadGenerator'](_0x2fdfx14f);
+                if (_0x2fdfx150) {
+                    this['startGrowing']()
+                };
+                this['timer'] = setTimeout('app.update()', _0x2fdfx157)
+            };
+
+            function _0x2fdfx167() {
+                _0x2fdfx15d['x'] = _0x2fdfx14c;
+                _0x2fdfx15d['y'] = _0x2fdfx14d;
+                _0x2fdfx15d['scale'] = _0x2fdfx14e
+            }
+            this['startGrowing'] = function () {
+                _0x2fdfx160['startGrowing'](_0x2fdfx166, _0x2fdfx148)
+            };
+            this['stopGrowing'] = function () {
+                _0x2fdfx160['cancelGrowing']();
+                this['createTeragon']();
+                _0x2fdfx165 = true
+            };
+            this['loadGenerator'] = function (g) {
+                _0x2fdfx160['cancelGrowing']();
+                _0x2fdfx167();
+                _0x2fdfxde['setName'](gNames[g]);
+                _0x2fdfxde['loadGenes'](genes[g]);
+                _0x2fdfx166 = _0x2fdfx151;
+                _0x2fdfx15e['setDomain'](_0x2fdfxde['getDomain']());
+                _0x2fdfx15e['setResolution'](_0x2fdfx143);
+                _0x2fdfx15e['setFamilyIntegerXY'](_0x2fdfxde['getFamilyInteger']()[
+                    'getReal'](), _0x2fdfxde['getFamilyInteger']()[
+                        'getImaginary']());
+                this['createTeragon']();
+                _0x2fdfx165 = true
+            };
+            this['createTeragon'] = function () {
+                _0x2fdfx15f['create'](_0x2fdfxde, _0x2fdfx166);
+                _0x2fdfx160['setGeneratorEndpoint'](_0x2fdfxde['getFamilyInteger']
+                    ()['getReal'](), _0x2fdfxde['getFamilyInteger']()[
+                        'getImaginary']());
+                _0x2fdfx160['setTeragon'](_0x2fdfx15f['getIntegerArraySize'](),
+                    _0x2fdfx15f['getIntegerArray'](), _0x2fdfxde[
+                        'getNumIntegers']())
+            };
+            this['update'] = function () {
+                this['updateTouch']();
+                if (Math['abs'](_0x2fdfx161['velX']) + Math['abs'](_0x2fdfx161[
+                    'velY']) > _0x2fdfx14b) {
+                    _0x2fdfx15d['x'] += _0x2fdfx161['velX'];
+                    _0x2fdfx15d['y'] += _0x2fdfx161['velY'];
+                    _0x2fdfx165 = true
+                };
+                if (_0x2fdfx160['getGrowing']()) {
+                    _0x2fdfx165 = true
+                };
+                if (_0x2fdfx165) {
+                    this['render']();
+                    _0x2fdfx165 = false
+                };
+                this['timer'] = setTimeout('app.update()', _0x2fdfx157)
+            };
+            this['updateTouch'] = function () {
+                let _0x2fdfx5d = _0x2fdfx161['x'] - _0x2fdfx161['prevX'];
+                let _0x2fdfx5e = _0x2fdfx161['y'] - _0x2fdfx161['prevY'];
+                _0x2fdfx161['prevX'] = _0x2fdfx161['x'];
+                _0x2fdfx161['prevY'] = _0x2fdfx161['y'];
+                if (_0x2fdfx161['down']) {
+                    _0x2fdfx161['velX'] += (_0x2fdfx5d * _0x2fdfx149);
+                    _0x2fdfx161['velY'] += (_0x2fdfx5e * _0x2fdfx149)
+                };
+                _0x2fdfx161['velX'] *= _0x2fdfx14a;
+                _0x2fdfx161['velY'] *= _0x2fdfx14a
+            };
+            this['setSplined'] = function (_0x2fdfx4a) {
+                _0x2fdfx160['setSplined'](_0x2fdfx4a)
+            };
+            this['getSplined'] = function (_0x2fdfx4a) {
+                return _0x2fdfxfe
+            };
+            this['toggleData'] = function () {
+                if (_0x2fdfx162) {
+                    _0x2fdfx162 = false
+                } else {
+                    _0x2fdfx162 = true
+                };
+                _0x2fdfx165 = true;
+                this['showButtonSelection']('infoButton', _0x2fdfx162)
+            };
+            this['getShowingData'] = function () {
+                return _0x2fdfx162
+            };
+            this['getShowingColor'] = function () {
+                return _0x2fdfx164
+            };
+            this['getShowingLattice'] = function () {
+                return _0x2fdfx163
+            };
+            this['toggleLattice'] = function () {
+                if (_0x2fdfx163) {
+                    _0x2fdfx163 = false
+                } else {
+                    _0x2fdfx163 = true
+                };
+                _0x2fdfx165 = true;
+                this['showButtonSelection']('latticeButton', _0x2fdfx163)
+            };
+            this['showButtonSelection'] = function (_0x2fdfx168, _0x2fdfx169) {
+                let _0x2fdfx16a = _0x2fdfx153;
+                if (_0x2fdfx169) {
+                    _0x2fdfx16a = _0x2fdfx152
+                };
+                document['getElementById'](_0x2fdfx168)['style'][
+                    'backgroundColor'] = _0x2fdfx16a
+            };
+            this['toggleSpline'] = function () {
+                if (_0x2fdfxfe) {
+                    _0x2fdfxfe = false
+                } else {
+                    _0x2fdfxfe = true
+                };
+                this['setSplined'](_0x2fdfxfe);
+                _0x2fdfx165 = true;
+                this['showButtonSelection']('splineButton', _0x2fdfxfe)
+            };
+            this['toggleColor'] = function () {
+                if (_0x2fdfx164) {
+                    _0x2fdfx164 = false
+                } else {
+                    _0x2fdfx164 = true
+                };
+                _0x2fdfx160['setUsingColor'](_0x2fdfx164)
+            };
+            this['increaseLevel'] = function () {
+                let _0x2fdfx16b = _0x2fdfx16c(_0x2fdfxde['getNumIntegers'](),
+                    _0x2fdfx166 + 1);
+                if (_0x2fdfx16b < MAX_TERAGON_INTEGERS) {
+                    _0x2fdfx166++
+                };
+                this['createTeragon']();
+                _0x2fdfx165 = true
+            };
+
+            function _0x2fdfx16c(_0x2fdfx16d, _0x2fdfx16e) {
+                let _0x2fdfx16b = 1;
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfx16e; _0x2fdfx14++) {
+                    _0x2fdfx16b *= _0x2fdfx16d
+                };
+                return _0x2fdfx16b
+            }
+            this['decreaseLevel'] = function () {
+                _0x2fdfx166--;
+                if (_0x2fdfx166 < 0) {
+                    _0x2fdfx166 = 0
+                };
+                this['createTeragon']();
+                _0x2fdfx165 = true
+            };
+            this['decreaseScale'] = function () {
+                _0x2fdfx15d['scale'] += _0x2fdfx146;
+                if (_0x2fdfx15d['scale'] > _0x2fdfx144) {
+                    _0x2fdfx15d['scale'] = _0x2fdfx144
+                };
+                _0x2fdfx165 = true
+            };
+            this['increaseScale'] = function () {
+                _0x2fdfx15d['scale'] -= _0x2fdfx146;
+                if (_0x2fdfx15d['scale'] < _0x2fdfx145) {
+                    _0x2fdfx15d['scale'] = _0x2fdfx145
+                };
+                _0x2fdfx165 = true
+            };
+            this['shift'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx15d['x'] += _0x2fdfx1e * _0x2fdfx147;
+                _0x2fdfx15d['y'] -= _0x2fdfx1f * _0x2fdfx147;
+                _0x2fdfx165 = true
+            };
+            this['render'] = function () {
+                canvas['fillStyle'] = _0x2fdfx33;
+                canvas['fillRect'](0, 0, canvas['canvas']['width'], canvas['canvas']
+                ['height']);
+                if (_0x2fdfx163) {
+                    _0x2fdfx15e['render'](_0x2fdfx15d['x'], _0x2fdfx15d['y'],
+                        _0x2fdfx15d['scale'])
+                };
+                _0x2fdfx160['render'](_0x2fdfx15d['x'], _0x2fdfx15d['y'],
+                    _0x2fdfx15d['scale']);
+                if (_0x2fdfx162) {
+                    this['showData']()
+                };
+                canvas['lineWidth'] = 2;
+                canvas['strokeStyle'] = _0x2fdfx142;
+                canvas['strokeRect'](1, 1, canvas['canvas']['width'] - 2, canvas[
+                    'canvas']['height'] - 2)
+            };
+            this['showData'] = function () {
+                let _0x2fdfx1e = _0x2fdfx154;
+                let _0x2fdfx1f = _0x2fdfx155;
+                let _0x2fdfx4a = _0x2fdfx156 * 1.5;
+                let _0x2fdfx44 = _0x2fdfxde['getFamilyIntComponents']()['getReal']
+                    ();
+                let _0x2fdfx66 = _0x2fdfxde['getFamilyIntComponents']()[
+                    'getImaginary']();
+                let _0x2fdfx16f = 'domain: ';
+                let _0x2fdfx170 = 'family: ';
+                if (_0x2fdfxde['getDomain']() === EISENSTEIN_DOMAIN) {
+                    _0x2fdfx16f += 'Eisenstein'
+                } else {
+                    _0x2fdfx16f += 'Gaussian'
+                };
+                let _0x2fdfx40 = '(unnamed curve)';
+                let _0x2fdfx171 = '';
+                if (_0x2fdfx160['getSplined']()) {
+                    _0x2fdfx171 = ' (splined) '
+                };
+                if (_0x2fdfxde['getName']() != 'unnamed') {
+                    _0x2fdfx40 = '\'' + _0x2fdfxde['getName']() + '\''
+                };
+                canvas['font'] = _0x2fdfx156 + 'px Arial';
+                canvas['strokeStyle'] = 'rgb( 0, 0, 0 )';
+                canvas['fillStyle'] = 'rgb( 0, 0, 0 )';
+                _0x2fdfx1f += _0x2fdfx4a * 0.5;
+                canvas['fillText'](_0x2fdfx40 + '  (fractal level: ' + _0x2fdfx166 +
+                    _0x2fdfx171 + ')', _0x2fdfx1e, _0x2fdfx1f);
+                _0x2fdfx1f += _0x2fdfx4a * 0.5;
+                _0x2fdfxde['render'](_0x2fdfx1e, _0x2fdfx1f, _0x2fdfx156 * 9);
+                canvas['fillStyle'] = 'rgb( 0, 0, 0 )';
+                _0x2fdfx1f += _0x2fdfx4a * 6;
+                canvas['fillText'](_0x2fdfx16f, _0x2fdfx1e, _0x2fdfx1f);
+                _0x2fdfx1f += _0x2fdfx4a * 1;
+                canvas['fillText'](_0x2fdfx170 + '(' + _0x2fdfx44 + ',' +
+                    _0x2fdfx66 + ')', _0x2fdfx1e, _0x2fdfx1f);
+                _0x2fdfx1f += _0x2fdfx4a * 1;
+                canvas['fillText']('norm: ' + _0x2fdfxde['getFamilyNorm'](),
+                    _0x2fdfx1e, _0x2fdfx1f);
+                canvas['font'] = (_0x2fdfx156 * 0.8) + 'px Arial';
+                _0x2fdfx1f += _0x2fdfx4a * 1.5;
+                canvas['fillText']('integers', _0x2fdfx1e, _0x2fdfx1f);
+                canvas['fillText']('transforms', _0x2fdfx1e + 80, _0x2fdfx1f);
+                canvas['font'] = _0x2fdfx156 + 'px Arial';
+                let _0x2fdfx172 = 7;
+                let _0x2fdfx173 = 30;
+                let _0x2fdfx174 = 80;
+                for (let _0x2fdfx14 = 0; _0x2fdfx14 < _0x2fdfxde['getNumIntegers']
+                    (); _0x2fdfx14++) {
+                    let _0x2fdfx44 = _0x2fdfxde['getIntComponent'](_0x2fdfx14)[
+                        'getReal']();
+                    let _0x2fdfx45 = _0x2fdfxde['getIntComponent'](_0x2fdfx14)[
+                        'getImaginary']();
+                    let _0x2fdfx175 = Math['abs'](_0x2fdfx44).toString();
+                    let _0x2fdfx176 = Math['abs'](_0x2fdfx45).toString();
+                    let _0x2fdfx177 = _0x2fdfxde['getTransform'](_0x2fdfx14)[
+                        'getRotation']().toString();
+                    let _0x2fdfx178 = _0x2fdfxde['getTransform'](_0x2fdfx14)[
+                        'getReflection']().toString();
+                    _0x2fdfx1f += _0x2fdfx4a;
+                    canvas['fillText'](_0x2fdfx175, _0x2fdfx1e + _0x2fdfx172,
+                        _0x2fdfx1f);
+                    if (_0x2fdfx44 < 0) {
+                        canvas['fillText']('-', _0x2fdfx1e, _0x2fdfx1f)
+                    };
+                    canvas['fillText'](_0x2fdfx176, _0x2fdfx1e + _0x2fdfx172 +
+                        _0x2fdfx173, _0x2fdfx1f);
+                    if (_0x2fdfx45 < 0) {
+                        canvas['fillText']('-', _0x2fdfx1e + _0x2fdfx173,
+                            _0x2fdfx1f)
+                    };
+                    canvas['fillText'](_0x2fdfx177, _0x2fdfx1e + _0x2fdfx172 +
+                        _0x2fdfx174, _0x2fdfx1f);
+                    canvas['fillText'](_0x2fdfx178, _0x2fdfx1e + _0x2fdfx172 +
+                        _0x2fdfx173 + _0x2fdfx174, _0x2fdfx1f)
+                }
+            };
+            this['initialize']();
+            this['touchJustDown'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx161['x'] = _0x2fdfx1e;
+                _0x2fdfx161['y'] = _0x2fdfx1f;
+                _0x2fdfx161['prevX'] = _0x2fdfx1e;
+                _0x2fdfx161['prevY'] = _0x2fdfx1f;
+                _0x2fdfx161['velX'] = 0.0;
+                _0x2fdfx161['velY'] = 0.0;
+                _0x2fdfx161['down'] = true
+            };
+            this['touchMove'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx161['x'] = _0x2fdfx1e;
+                _0x2fdfx161['y'] = _0x2fdfx1f
+            };
+            this['touchJustUp'] = function (_0x2fdfx1e, _0x2fdfx1f) {
+                _0x2fdfx161['x'] = _0x2fdfx1e;
+                _0x2fdfx161['y'] = _0x2fdfx1f;
+                _0x2fdfx161['down'] = false
+            }
+        }
+        document['onmousedown'] = function (_0x2fdfx179) {
+            app['touchJustDown'](_0x2fdfx179['pageX'], _0x2fdfx179['pageY'])
+        };
+        document['onmousemove'] = function (_0x2fdfx179) {
+            app['touchMove'](_0x2fdfx179['pageX'], _0x2fdfx179['pageY'])
+        };
+        document['onmouseup'] = function (_0x2fdfx179) {
+            app['touchJustUp'](_0x2fdfx179['pageX'], _0x2fdfx179['pageY'])
+        }
+    </script>
+
+
+    <script type="text/javascript">
+        function closeAll() {
+            document.getElementById('G11Panel').style.visibility = 'hidden';
+            document.getElementById('E21Panel').style.visibility = 'hidden';
+            document.getElementById('E20Panel').style.visibility = 'hidden';
+            document.getElementById('G20Panel').style.visibility = 'hidden';
+            document.getElementById('G21Panel').style.visibility = 'hidden';
+            document.getElementById('E31Panel').style.visibility = 'hidden';
+            document.getElementById('G22Panel').style.visibility = 'hidden';
+            document.getElementById('G30Panel').style.visibility = 'hidden';
+            document.getElementById('E30Panel').style.visibility = 'hidden';
+            document.getElementById('G31Panel').style.visibility = 'hidden';
+
+            app.showButtonSelection('G11Button', false);
+            app.showButtonSelection('E21Button', false);
+            app.showButtonSelection('E20Button', false);
+            app.showButtonSelection('G20Button', false);
+            app.showButtonSelection('G21Button', false);
+            app.showButtonSelection('E31Button', false);
+            app.showButtonSelection('G22Button', false);
+            app.showButtonSelection('G30Button', false);
+            app.showButtonSelection('E30Button', false);
+            app.showButtonSelection('G31Button', false);
+        }
+
+        function openPanel(panelID) {
+            document.getElementById(panelID).style.visibility = 'visible';
+        }
+
+    </script>
+
+    <div id="mainPanel">
+        <font size=3 color='#000000' face='arial'>
+            Fractal curves made with complex integers
+        </font>
+        <br>
+        <font size=2 color='#000000' face='arial'>
+            created by Jeffrey Ventrella (
+            <a href='http://www.fractalcurves.com/'>fractalcurves.com</a>
+            )
+        </font>
+        <br>
+        <br>
+        <font size=2 color='#000000' face='arial'>
+            These fractal curves are based on a taxonomy which is explained in the book,
+            <a href='https://archive.org/details/thefamilytreeoffractalcurves_201907'>The Family Tree of Fractal
+                Curves</a>.
+        </font>
+        <br>
+        <br>
+        <font size=2 color='#000000' face='arial'>
+            view settings
+        </font>
+        <br>
+        <button id="decreaseLevelButton" onClick="app.decreaseLevel();">level - </button>
+        <button id="increaseLevelButton" onClick="app.increaseLevel();">level + </button>
+        <button id="latticeButton" onClick="app.toggleLattice();">toggle lattice </button>
+        <button id="decreaseScaleButton" onClick="app.increaseScale();">smaller </button>
+        <button id="increaseScaleButton" onClick="app.decreaseScale();">bigger </button>
+        <button id="splineButton" onClick="app.toggleSpline ();">toggle spline </button>
+        <button id="shiftLeftButton" onClick="app.shift(-1, 0 );">left </button>
+        <button id="shiftRightButton" onClick="app.shift( 1, 0 );">right </button>
+        <button id="infoButton" onClick="app.toggleData();">toggle info </button>
+        <button id="shiftUpButton" onClick="app.shift( 0, 1 );">up </button>
+        <button id="shiftDownButton" onClick="app.shift( 0,-1 );">down </button>
+        <button id="startGrowingButton" onClick="app.startGrowing();">grow </button>
+
+        <!--<button id = "stopGrowingButton"    onClick = "app.stopGrowing();"    >stop grow      </button>-->
+        <br>
+        <br>
+        <font size=2 color='#000000' face='arial'>
+            families
+        </font>
+        <br>
+        <button id="G11Button"
+            onClick="closeAll(); openPanel( 'G11Panel' ); app.showButtonSelection( 'G11Button', true );">G(1,1) norm
+            2</button>
+        <button id="E21Button"
+            onClick="closeAll(); openPanel( 'E21Panel' ); app.showButtonSelection( 'E21Button', true );">E(2,1) norm
+            3</button>
+        <button id="E20Button"
+            onClick="closeAll(); openPanel( 'E20Panel' ); app.showButtonSelection( 'E20Button', true );">E(2,0) norm
+            4</button>
+        <button id="G20Button"
+            onClick="closeAll(); openPanel( 'G20Panel' ); app.showButtonSelection( 'G20Button', true );">G(2,0) norm
+            4</button>
+        <button id="G21Button"
+            onClick="closeAll(); openPanel( 'G21Panel' ); app.showButtonSelection( 'G21Button', true );">G(2,1) norm
+            5</button>
+        <button id="E31Button"
+            onClick="closeAll(); openPanel( 'E31Panel' ); app.showButtonSelection( 'E31Button', true );">E(3,1) norm
+            7</button>
+        <button id="G22Button"
+            onClick="closeAll(); openPanel( 'G22Panel' ); app.showButtonSelection( 'G22Button', true );">G(2,2) norm
+            8</button>
+        <button id="G30Button"
+            onClick="closeAll(); openPanel( 'G30Panel' ); app.showButtonSelection( 'G30Button', true );">G(3,0) norm
+            9</button>
+        <button id="E30Button"
+            onClick="closeAll(); openPanel( 'E30Panel' ); app.showButtonSelection( 'E30Button', true );">E(3,0) norm
+            9</button>
+        <br>
+        <button id="G31Button"
+            onClick="closeAll(); openPanel( 'G31Panel' ); app.showButtonSelection( 'G31Button', true );">G(3,1) norm
+            10</button>
+        <br>
+        <br>
+        <font size=2 color='#000000' face='arial'>
+            generators
+        </font>
+        <br>
+    </div>
+
+    <!-- ------------------------------------------------------------ -->
+    <!-- Family panels                                                -->
+    <!-- ------------------------------------------------------------ -->
+    <div id="G11Panel">
+        <button id="basicButton" onClick="app.loadGenerator( DRAGON_CURVE    );">dragon curve </button>
+        <button id="basicButton" onClick="app.loadGenerator( POLYA           );">Polya curve </button>
+    </div>
+    <div id="E21Panel">
+        <button id="basicButton" onClick="app.loadGenerator( TER_DRAGON      );">Terdragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( INVERTED_TER    );">Inverted Ter </button>
+        <button id="basicButton" onClick="app.loadGenerator( HALF_TER        );">half-Ter </button>
+        <button id="basicButton" onClick="app.loadGenerator( WALKING_TER     );">Walking ter </button>
+        <button id="basicButton" onClick="app.loadGenerator( CHAIR           );">Chair </button>
+        <button id="basicButton" onClick="app.loadGenerator( BUTTERFLY       );">Butterfly </button>
+        <button id="basicButton" onClick="app.loadGenerator( AVOID_3         );">Avoid 3 </button>
+        <button id="basicButton" onClick="app.loadGenerator( HOOK_3          );">Hook 3 </button>
+        <button id="basicButton" onClick="app.loadGenerator( BOX_3           );">Box 3 </button>
+        <button id="basicButton" onClick="app.loadGenerator( BLOB_3          );">Blob 3 </button>
+    </div>
+    <div id="E20Panel">
+        <button id="basicButton" onClick="app.loadGenerator( GASKET          );">Gasket </button>
+        <button id="basicButton" onClick="app.loadGenerator( SIERPINSKI      );">Sierpinski </button>
+        <button id="basicButton" onClick="app.loadGenerator( SIERP_FAMILY    );">Sierp family </button>
+        <button id="basicButton" onClick="app.loadGenerator( SPLOTCH         );">Splotch </button>
+        <button id="basicButton" onClick="app.loadGenerator( BROKE_GASKET    );">broke gasket </button>
+        <button id="basicButton" onClick="app.loadGenerator( EDGE            );">edge </button>
+        <button id="basicButton" onClick="app.loadGenerator( DRAGON_4        );">4-Dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( TRI_4           );">4_Triangle </button>
+    </div>
+    <div id="G20Panel">
+        <button id="basicButton" onClick="app.loadGenerator( PEANO_SWEEP     );">Peano sweep </button>
+        <button id="basicButton" onClick="app.loadGenerator( DRAGON_OF_EVE   );">Dragon-Eve </button>
+        <button id="basicButton" onClick="app.loadGenerator( CARBAJO         );">Carbajo </button>
+        <button id="basicButton" onClick="app.loadGenerator( TILE_CURVE      );">Tile Curve </button>
+        <button id="basicButton" onClick="app.loadGenerator( V1_DRAGON       );">V1 Dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( TEXTURE_DRAGON  );">Text-Dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( TRIANGLE_4      );">Triangle 4 </button>
+        <button id="basicButton" onClick="app.loadGenerator( CITY_4          );">City 4 </button>
+        <button id="basicButton" onClick="app.loadGenerator( BOX_4           );">Box 4 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TOSSED_CITY     );">Tossed City </button>
+        <button id="basicButton" onClick="app.loadGenerator( CESARO          );">Cesaro </button>
+    </div>
+    <div id="G21Panel">
+        <button id="basicButton" onClick="app.loadGenerator( QUARTET         );">Quartet </button>
+        <button id="basicButton" onClick="app.loadGenerator( DRAGON_5        );">5 dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( FIVE_BLOB       );">5 Blob </button>
+        <button id="basicButton" onClick="app.loadGenerator( FIVE_JAGGY      );">5 Jaggy </button>
+        <button id="basicButton" onClick="app.loadGenerator( FIVE_JAGGY_2    );">5 Jaggy 2 </button>
+        <button id="basicButton" onClick="app.loadGenerator( FIVE_CRAZY      );">5 Crazy </button>
+        <button id="basicButton" onClick="app.loadGenerator( FIVE_PINE       );">5 Pine </button>
+    </div>
+    <div id="E31Panel">
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER          );">Gosper </button>
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER_DRAGON   );">Gosp-Drag. </button>
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER_HOOK     );">Gosper Hook </button>
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER_BLOB     );">Gosper Blob </button>
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER_PINCH    );">Pinch </button>
+        <button id="basicButton" onClick="app.loadGenerator( GOSPER_NESTED   );">Nested </button>
+        <button id="basicButton" onClick="app.loadGenerator( SWAN_BLOB       );">Swan Blob </button>
+        <button id="basicButton" onClick="app.loadGenerator( JAGGED          );">Jagged </button>
+        <button id="basicButton" onClick="app.loadGenerator( DRAGON_7        );">7-Dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( FUN             );">Fun </button>
+        <button id="basicButton" onClick="app.loadGenerator( VENTRELLA_CURVE );">V-curve </button>
+        <button id="basicButton" onClick="app.loadGenerator( VENTRELLA_FLIP  );">V-curve-flip </button>
+        <button id="basicButton" onClick="app.loadGenerator( ASSYM_7_1       );">Assym_7_1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( ASSYM_7_2       );">Assym_7_2 </button>
+        <button id="basicButton" onClick="app.loadGenerator( SYM_7_1         );">Sym_7_1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( SYM_7_2         );">Sym_7_2 </button>
+    </div>
+    <div id="G22Panel">
+        <button id="basicButton" onClick="app.loadGenerator( EIGHT_FILLER    );">8-filler </button>
+        <button id="basicButton" onClick="app.loadGenerator( BRAIN_FILLER    );">brainfiller </button>
+        <button id="basicButton" onClick="app.loadGenerator( BRAIN_DRAGON    );">brain dragon </button>
+        <button id="basicButton" onClick="app.loadGenerator( STAR_EIGHT      );">star 8 </button>
+        <button id="basicButton" onClick="app.loadGenerator( BROKEN_TWINS    );">broken twins </button>
+        <button id="basicButton" onClick="app.loadGenerator( CARB_8          );">Carb-8 </button>
+        <button id="basicButton" onClick="app.loadGenerator( EVE_8           );">Eve-8 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TRI_8_1         );">Tri-8 1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( EDGE_8          );">Edge-8 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TILE_8          );">Tile-8 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TWIN_PIECE      );">Twin Piece </button>
+
+
+    </div>
+    <div id="G30Panel">
+        <button id="basicButton" onClick="app.loadGenerator( PEANO           );">Peano curve </button>
+        <button id="basicButton" onClick="app.loadGenerator( SQUARE_KOCH     );">Quad Koch </button>
+        <button id="basicButton" onClick="app.loadGenerator( TRI_9           );">Tri-9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( CITY_9          );">City-9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( CRAGGY_9        );">Craggy-9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( JAGGY_9_1       );">Jaggy-9-1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TOSS_9          );">toss-9 </button>
+
+
+    </div>
+    <div id="E30Panel">
+        <button id="basicButton" onClick="app.loadGenerator( KOCH            );">Koch </button>
+        <button id="basicButton" onClick="app.loadGenerator( WALKING_9       );">walking 9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( SCROLL          );">scroll </button>
+        <button id="basicButton" onClick="app.loadGenerator( SNOWFLAKE       );">snowflake </button>
+        <button id="basicButton" onClick="app.loadGenerator( AVOID_BRAIN     );">avoid brain </button>
+        <button id="basicButton" onClick="app.loadGenerator( FRAYED_CARPET   );">frayed carpet </button>
+        <button id="basicButton" onClick="app.loadGenerator( JAGGY_CARPET    );">jaggy carpet </button>
+        <button id="basicButton" onClick="app.loadGenerator( HOLIDAY_TREE    );">holiday tree </button>
+        <button id="basicButton" onClick="app.loadGenerator( AVOID_E_9_1     );">avoid E91 </button>
+        <button id="basicButton" onClick="app.loadGenerator( AVOID_E_9_2     );">avoid E92 </button>
+        <button id="basicButton" onClick="app.loadGenerator( COMPLEX_INV_TER );">plex inv Tter </button>
+        <button id="basicButton" onClick="app.loadGenerator( FUZZY_CRADLE    );">fuzzy cradle </button>
+        <button id="basicButton" onClick="app.loadGenerator( NINE_AVOID      );">avoider 9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( MAPLE           );">Maple </button>
+        <button id="basicButton" onClick="app.loadGenerator( COOL_E9         );">Cool E9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( THING_E9        );">Thing E9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( TRIANGLE_9      );">Triangle 9 </button>
+        <button id="basicButton" onClick="app.loadGenerator( CARPET_1        );">Carpet 1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( B1              );">B1 </button>
+        <button id="basicButton" onClick="app.loadGenerator( B2              );">B2 </button>
+        <button id="basicButton" onClick="app.loadGenerator( THING_9         );">Thing9 </button>
+
+
+    </div>
+    <div id="G31Panel">
+        <button id="basicButton" onClick="app.loadGenerator( UGLY_10         );">Ugly 10 </button>
+    </div>
+
+    <div id="Footer">
+        <font size=2 color='#555555' face='arial'>
+            (More generators will be added later)
+        </font>
+    </div>
+
+    <script>
+        window.onload = function () {
+            app = new App();
+            openPanel('E30Panel');
+        };
+    </script>
+</body>
+
+</html>

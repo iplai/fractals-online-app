@@ -1,0 +1,78 @@
+body {
+    background-color: #bbb5b2;
+}
+
+#mainPanel {
+    position: absolute;
+    left: 920;
+    top: 10;
+    width: 350;
+}
+
+#G11Button,
+#E21Button,
+#E20Button,
+#G20Button,
+#G21Button,
+#E31Button,
+#G22Button,
+#G30Button,
+#E30Button,
+#G31Button {
+    width: 110;
+    height: 20;
+}
+
+
+#basicButton {
+    width: 100;
+    height: 20;
+}
+
+#decreaseLevelButton,
+#increaseLevelButton,
+#decreaseScaleButton,
+#increaseScaleButton,
+#shiftLeftButton,
+#shiftRightButton,
+#shiftUpButton,
+#shiftDownButton {
+    width: 100;
+    height: 20;
+}
+
+
+#startGrowingButton,
+#stopGrowingButton,
+#infoButton,
+#latticeButton,
+#splineButton {
+    width: 100;
+    height: 20;
+    background-color: #dddddd;
+}
+
+#G11Panel,
+#E21Panel,
+#E20Panel,
+#G20Panel,
+#G21Panel,
+#E31Panel,
+#G22Panel,
+#G30Panel,
+#E30Panel,
+#G31Panel {
+    visibility: hidden;
+    position: absolute;
+    left: 920;
+    top: 370;
+    width: 350;
+    height: 180;
+}
+
+
+#Footer {
+    position: absolute;
+    left: 920;
+    top: 580;
+}
