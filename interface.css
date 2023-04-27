@@ -65,7 +65,7 @@ body {
     visibility: hidden;
     position: absolute;
     left: 920;
-    top: 370;
+    top: 455;
     width: 350;
     height: 180;
 }
@@ -74,5 +74,5 @@ body {
 #Footer {
     position: absolute;
     left: 920;
-    top: 580;
+    top: 600;
 }
